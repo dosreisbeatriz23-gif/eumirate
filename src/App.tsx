@@ -7,7 +7,10 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Login from "./pages/Login";
-import MinhaLista from "./pages/MinhaLista";
+import Dashboard from "./pages/Dashboard";
+import CreateList from "./pages/CreateList";
+import ListDetail from "./pages/ListDetail";
+import AddItem from "./pages/AddItem";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -23,10 +26,34 @@ const App = () => (
             <Route path="/" element={<Index />} />
             <Route path="/login" element={<Login />} />
             <Route
-              path="/minha-lista"
+              path="/dashboard"
               element={
                 <ProtectedRoute>
-                  <MinhaLista />
+                  <Dashboard />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/criar-lista"
+              element={
+                <ProtectedRoute>
+                  <CreateList />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/lista/:id"
+              element={
+                <ProtectedRoute>
+                  <ListDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/lista/:id/adicionar"
+              element={
+                <ProtectedRoute>
+                  <AddItem />
                 </ProtectedRoute>
               }
             />
