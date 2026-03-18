@@ -23,11 +23,13 @@ const AddItem = () => {
   const [url, setUrl] = useState("");
   const [extracting, setExtracting] = useState(false);
   const [meta, setMeta] = useState<ExtractedMeta | null>(null);
+  const [lastExtractedUrl, setLastExtractedUrl] = useState("");
 
   // Allow manual overrides
   const [name, setName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [priceRange, setPriceRange] = useState("");
+  const [description, setDescription] = useState("");
 
   const extractMetadata = async () => {
     if (!url.trim()) return toast.error("Cole um link primeiro");
