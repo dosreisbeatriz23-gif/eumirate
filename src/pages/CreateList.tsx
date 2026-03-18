@@ -33,7 +33,7 @@ const CreateList = () => {
       toast.success("Lista criada!");
       navigate(`/lista/${data.id}`, { replace: true });
     },
-    onError: () => toast.error("Erro ao criar lista"),
+    onError: (err: any) => toast.error(err?.message || "Erro ao criar lista"),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
