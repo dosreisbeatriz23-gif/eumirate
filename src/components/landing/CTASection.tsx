@@ -14,7 +14,7 @@ const CTASection = () => {
             Crie sua lista em menos de um minuto. É gratuito e sempre será.
           </p>
           <Button asChild size="lg" className="px-8 py-6 text-base rounded-full shadow-soft hover:shadow-medium transition-all">
-            <Link to="/login">
+            <Link to="/dashboard">
               <Gift className="w-5 h-5 mr-2" />
               Criar minha lista agora
             </Link>
