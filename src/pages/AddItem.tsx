@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
 import { ArrowLeft, Link as LinkIcon, Loader2, Gift, Save } from "lucide-react";
@@ -15,6 +16,15 @@ interface ExtractedMeta {
   description: string | null;
 }
 
+const isValidUrl = (str: string) => {
+  try {
+    const u = new URL(str.trim());
+    return u.protocol === "http:" || u.protocol === "https:";
+  } catch {
+    return false;
+  }
+};
+
 const AddItem = () => {
   const { id: listId } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -23,18 +33,21 @@ const AddItem = () => {
   const [url, setUrl] = useState("");
   const [extracting, setExtracting] = useState(false);
   const [meta, setMeta] = useState<ExtractedMeta | null>(null);
+  const lastExtractedUrl = useRef("");
 
-  // Allow manual overrides
   const [name, setName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
   const [priceRange, setPriceRange] = useState("");
+  const [description, setDescription] = useState("");
 
-  const extractMetadata = async () => {
-    if (!url.trim()) return toast.error("Cole um link primeiro");
+  const extractMetadata = async (targetUrl: string) => {
+    if (!targetUrl.trim() || !isValidUrl(targetUrl)) return;
+    if (lastExtractedUrl.current === targetUrl.trim()) return;
+    lastExtractedUrl.current = targetUrl.trim();
     setExtracting(true);
     try {
       const { data, error } = await supabase.functions.invoke("extract-link-metadata", {
-        body: { url: url.trim() },
+        body: { url: targetUrl.trim() },
       });
       if (error) throw error;
       if (data?.success && data.data) {
@@ -42,6 +55,7 @@ const AddItem = () => {
         setMeta(d);
         setName(d.title ?? "");
         setImageUrl(d.image ?? "");
+        setDescription(d.description ?? "");
         setPriceRange(d.price ? `R$ ${d.price}` : "");
         toast.success("Dados extraídos!");
       } else {
@@ -54,6 +68,14 @@ const AddItem = () => {
     }
   };
 
+  // Auto-extract when a valid URL is pasted or typed
+  useEffect(() => {
+    if (isValidUrl(url) && url.trim() !== lastExtractedUrl.current) {
+      const timeout = setTimeout(() => extractMetadata(url), 400);
+      return () => clearTimeout(timeout);
+    }
+  }, [url]);
+
   const saveMutation = useMutation({
     mutationFn: async () => {
       const { error } = await supabase.from("wishlist_items").insert({
@@ -62,6 +84,7 @@ const AddItem = () => {
         external_link: url.trim() || null,
         image_url: imageUrl.trim() || null,
         price_range: priceRange.trim() || null,
+        description: description.trim() || null,
         priority: "média",
       });
       if (error) throw error;
@@ -103,25 +126,18 @@ const AddItem = () => {
           <label className="text-sm font-medium text-foreground block">
             Cole o link do produto
           </label>
-          <div className="flex gap-2">
-            <div className="relative flex-1">
-              <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-              <Input
-                placeholder="https://..."
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                className="pl-9"
-                autoFocus
-              />
-            </div>
-            <Button
-              onClick={extractMetadata}
-              disabled={extracting || !url.trim()}
-              variant="outline"
-              className="shrink-0"
-            >
-              {extracting ? <Loader2 className="w-4 h-4 animate-spin" /> : "Buscar"}
-            </Button>
+          <div className="relative">
+            <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              placeholder="https://..."
+              value={url}
+              onChange={(e) => setUrl(e.target.value)}
+              className="pl-9 pr-10"
+              autoFocus
+            />
+            {extracting && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+            )}
           </div>
         </div>
 
@@ -141,10 +157,15 @@ const AddItem = () => {
                 <Gift className="w-12 h-12 text-muted-foreground/30" />
               </div>
             )}
-            <CardContent className="p-4 space-y-1">
+            <CardContent className="p-4 space-y-2">
               <h3 className="font-serif font-medium text-foreground text-lg line-clamp-2">
                 {name || "Sem título"}
               </h3>
+              {description && (
+                <p className="text-sm text-muted-foreground line-clamp-3">
+                  {description}
+                </p>
+              )}
               {priceRange && (
                 <span className="inline-block text-sm bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
                   {priceRange}
@@ -163,6 +184,16 @@ const AddItem = () => {
               value={name}
               onChange={(e) => setName(e.target.value)}
               maxLength={100}
+            />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-foreground mb-1.5 block">Descrição</label>
+            <Textarea
+              placeholder="Descrição do item"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              maxLength={500}
+              rows={3}
             />
           </div>
           <div>
