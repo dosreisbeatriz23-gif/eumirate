@@ -12,6 +12,7 @@ import CreateList from "./pages/CreateList";
 import ListDetail from "./pages/ListDetail";
 import AddItem from "./pages/AddItem";
 import MeusDesejos from "./pages/MeusDesejos";
+import Categorias from "./pages/Categorias";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -63,6 +64,14 @@ const App = () => (
               element={
                 <ProtectedRoute>
                   <MeusDesejos />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/categorias"
+              element={
+                <ProtectedRoute>
+                  <Categorias />
                 </ProtectedRoute>
               }
             />
