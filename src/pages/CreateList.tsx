@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useLocalUser } from "@/hooks/useLocalUser";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -10,7 +10,7 @@ import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 
 const CreateList = () => {
-  const { user } = useAuth();
+  const { userId } = useLocalUser();
   const navigate = useNavigate();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -20,7 +20,7 @@ const CreateList = () => {
       const { data, error } = await supabase
         .from("wishlists")
         .insert({
-          user_id: user!.id,
+          user_id: userId,
           title: title.trim() || "Minha Lista de Desejos",
           description: description.trim() || null,
         })

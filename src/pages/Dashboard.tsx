@@ -1,30 +1,28 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useLocalUser } from "@/hooks/useLocalUser";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Plus, Gift, LogOut, List } from "lucide-react";
+import { Plus, Gift, List } from "lucide-react";
 
 const Dashboard = () => {
-  const { user, signOut } = useAuth();
+  const { userId } = useLocalUser();
   const navigate = useNavigate();
 
   const { data: wishlists = [], isLoading } = useQuery({
-    queryKey: ["wishlists", user?.id],
+    queryKey: ["wishlists", userId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wishlists")
         .select("*")
-        .eq("user_id", user!.id)
+        .eq("user_id", userId)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
   });
 
-  // Fetch items for all wishlists to show thumbnails & counts
   const wishlistIds = wishlists.map((w) => w.id);
   const { data: allItems = [] } = useQuery({
     queryKey: ["all-wishlist-items", wishlistIds],
@@ -50,9 +48,6 @@ const Dashboard = () => {
           <h1 className="text-xl font-serif font-medium text-foreground">
             <span className="text-gradient">EUMIRATE</span>
           </h1>
-          <Button variant="ghost" size="icon" onClick={signOut} title="Sair">
-            <LogOut className="w-4 h-4" />
-          </Button>
         </div>
       </header>
 
@@ -87,19 +82,16 @@ const Dashboard = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {wishlists.map((list) => {
               const listItems = getItemsForList(list.id);
-              const thumbnails = listItems
-                .filter((i) => i.image_url)
-                .slice(0, 4);
+              const thumbnails = listItems.filter((i) => i.image_url).slice(0, 4);
               return (
                 <Card
                   key={list.id}
                   className="group rounded-2xl overflow-hidden hover-lift border-border/50 cursor-pointer transition-all"
                   onClick={() => navigate(`/lista/${list.id}`)}
                 >
-                  {/* Thumbnail grid */}
                   <div className="h-40 bg-muted/30 grid grid-cols-2 grid-rows-2 gap-px overflow-hidden">
                     {thumbnails.length > 0 ? (
-                      thumbnails.map((item, idx) => (
+                      thumbnails.map((item) => (
                         <div key={item.id} className="bg-muted overflow-hidden">
                           <img
                             src={item.image_url!}
@@ -114,7 +106,6 @@ const Dashboard = () => {
                         <List className="w-10 h-10 text-muted-foreground/30" />
                       </div>
                     )}
-                    {/* Fill remaining slots */}
                     {thumbnails.length > 0 &&
                       thumbnails.length < 4 &&
                       Array.from({ length: 4 - thumbnails.length }).map((_, i) => (

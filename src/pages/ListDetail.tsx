@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useLocalUser } from "@/hooks/useLocalUser";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -26,14 +26,13 @@ import {
   Trash2,
   Share2,
   Check,
-  Copy,
   ArrowRightLeft,
 } from "lucide-react";
 import { useState } from "react";
 
 const ListDetail = () => {
   const { id } = useParams<{ id: string }>();
-  const { user } = useAuth();
+  const { userId } = useLocalUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
@@ -48,12 +47,11 @@ const ListDetail = () => {
         .from("wishlists")
         .select("*")
         .eq("id", id!)
-        .eq("user_id", user!.id)
         .single();
       if (error) throw error;
       return data;
     },
-    enabled: !!id && !!user,
+    enabled: !!id,
   });
 
   const { data: items = [], isLoading } = useQuery({
@@ -70,19 +68,18 @@ const ListDetail = () => {
     enabled: !!id,
   });
 
-  // Other lists for "move" feature
   const { data: otherLists = [] } = useQuery({
-    queryKey: ["other-wishlists", user?.id, id],
+    queryKey: ["other-wishlists", userId, id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wishlists")
         .select("id, title")
-        .eq("user_id", user!.id)
+        .eq("user_id", userId)
         .neq("id", id!);
       if (error) throw error;
       return data;
     },
-    enabled: !!user && !!id,
+    enabled: !!id,
   });
 
   const deleteMutation = useMutation({
@@ -125,12 +122,6 @@ const ListDetail = () => {
     setCopied(true);
     toast.success("Link copiado!");
     setTimeout(() => setCopied(false), 2000);
-  };
-
-  const openMoveDialog = (itemId: string) => {
-    setMovingItemId(itemId);
-    setTargetListId("");
-    setMoveDialogOpen(true);
   };
 
   return (
@@ -239,7 +230,11 @@ const ListDetail = () => {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => openMoveDialog(item.id)}
+                        onClick={() => {
+                          setMovingItemId(item.id);
+                          setTargetListId("");
+                          setMoveDialogOpen(true);
+                        }}
                         title="Mover para outra lista"
                       >
                         <ArrowRightLeft className="w-3.5 h-3.5" />
@@ -262,7 +257,6 @@ const ListDetail = () => {
         )}
       </div>
 
-      {/* Move dialog */}
       <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
