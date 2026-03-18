@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useLocalUser } from "@/hooks/useLocalUser";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -25,15 +25,13 @@ import {
   Trash2,
   Share2,
   Check,
-  Copy,
   ArrowRightLeft,
-  LogOut,
   Loader2,
 } from "lucide-react";
 import { useState } from "react";
 
 const MeusDesejos = () => {
-  const { user, signOut } = useAuth();
+  const { userId } = useLocalUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
@@ -41,21 +39,19 @@ const MeusDesejos = () => {
   const [movingItemId, setMovingItemId] = useState<string | null>(null);
   const [targetListId, setTargetListId] = useState("");
 
-  // Fetch user's default (first) wishlist
   const { data: wishlist, isLoading: loadingList } = useQuery({
-    queryKey: ["default-wishlist", user?.id],
+    queryKey: ["default-wishlist", userId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wishlists")
         .select("*")
-        .eq("user_id", user!.id)
+        .eq("user_id", userId)
         .order("created_at", { ascending: true })
         .limit(1)
         .single();
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
   });
 
   const listId = wishlist?.id;
@@ -74,19 +70,18 @@ const MeusDesejos = () => {
     enabled: !!listId,
   });
 
-  // Other lists for "move" feature
   const { data: otherLists = [] } = useQuery({
-    queryKey: ["other-wishlists", user?.id, listId],
+    queryKey: ["other-wishlists", userId, listId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wishlists")
         .select("id, title")
-        .eq("user_id", user!.id)
+        .eq("user_id", userId)
         .neq("id", listId!);
       if (error) throw error;
       return data;
     },
-    enabled: !!user && !!listId,
+    enabled: !!listId,
   });
 
   const deleteMutation = useMutation({
@@ -148,15 +143,10 @@ const MeusDesejos = () => {
           <h1 className="text-xl font-serif font-medium text-foreground">
             <span className="text-gradient">EUMIRATE</span>
           </h1>
-          <div className="flex items-center gap-2">
-            <Button variant="outline" size="sm" onClick={handleShare} className="rounded-full">
-              {copied ? <Check className="w-4 h-4 mr-1" /> : <Share2 className="w-4 h-4 mr-1" />}
-              {copied ? "Copiado!" : "Compartilhar"}
-            </Button>
-            <Button variant="ghost" size="icon" onClick={signOut} title="Sair">
-              <LogOut className="w-4 h-4" />
-            </Button>
-          </div>
+          <Button variant="outline" size="sm" onClick={handleShare} className="rounded-full">
+            {copied ? <Check className="w-4 h-4 mr-1" /> : <Share2 className="w-4 h-4 mr-1" />}
+            {copied ? "Copiado!" : "Compartilhar"}
+          </Button>
         </div>
       </header>
 
@@ -274,7 +264,6 @@ const MeusDesejos = () => {
         )}
       </div>
 
-      {/* Move dialog */}
       <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
         <DialogContent className="sm:max-w-sm">
           <DialogHeader>
