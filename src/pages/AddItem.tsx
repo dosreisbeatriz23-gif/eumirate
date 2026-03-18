@@ -27,9 +27,39 @@ const isValidUrl = (str: string) => {
 };
 
 const AddItem = () => {
-  const { id: listId } = useParams<{ id: string }>();
+  const { id: paramListId } = useParams<{ id: string }>();
+  const { userId } = useLocalUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Check if paramListId is a valid UUID (not the literal ":id")
+  const isValidUuid = paramListId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(paramListId);
+
+  // Fetch user's first list if no valid listId from params
+  const { data: userLists } = useQuery({
+    queryKey: ["user-wishlists-for-add", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wishlists")
+        .select("id, title")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true })
+        .limit(1);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !isValidUuid,
+  });
+
+  const [resolvedListId, setResolvedListId] = useState<string | null>(isValidUuid ? paramListId! : null);
+
+  useEffect(() => {
+    if (isValidUuid && paramListId) {
+      setResolvedListId(paramListId);
+    } else if (userLists && userLists.length > 0) {
+      setResolvedListId(userLists[0].id);
+    }
+  }, [isValidUuid, paramListId, userLists]);
 
   const [url, setUrl] = useState("");
   const [extracting, setExtracting] = useState(false);
