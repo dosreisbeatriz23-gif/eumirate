@@ -38,7 +38,6 @@ const CreateList = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title.trim()) return toast.error("Nome da lista é obrigatório");
     createMutation.mutate();
   };
 
