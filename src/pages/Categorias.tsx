@@ -48,17 +48,16 @@ const Categorias = () => {
   const navigate = useNavigate();
 
   const { data: wishlists = [] } = useQuery({
-    queryKey: ["wishlists", user?.id],
+    queryKey: ["wishlists", userId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wishlists")
         .select("id, title")
-        .eq("user_id", user!.id)
+        .eq("user_id", userId)
         .order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
-    enabled: !!user,
   });
 
   return (
