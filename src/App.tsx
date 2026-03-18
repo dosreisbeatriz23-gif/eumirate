@@ -67,6 +67,14 @@ const App = () => (
                 </ProtectedRoute>
               }
             />
+            <Route
+              path="/categorias"
+              element={
+                <ProtectedRoute>
+                  <Categorias />
+                </ProtectedRoute>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
