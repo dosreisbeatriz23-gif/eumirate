@@ -107,23 +107,41 @@ const AddItem = () => {
     }
   }, [url]);
 
+  const createListAndSave = async () => {
+    let targetListId = resolvedListId;
+
+    // If no list exists, create one automatically
+    if (!targetListId) {
+      const { data: newList, error: listError } = await supabase
+        .from("wishlists")
+        .insert({ user_id: userId, title: "Minha Lista de Desejos" })
+        .select("id")
+        .single();
+      if (listError) throw listError;
+      targetListId = newList.id;
+      setResolvedListId(targetListId);
+    }
+
+    const { error } = await supabase.from("wishlist_items").insert({
+      wishlist_id: targetListId,
+      name: name.trim(),
+      external_link: url.trim() || null,
+      image_url: imageUrl.trim() || null,
+      price_range: priceRange.trim() || null,
+      description: description.trim() || null,
+      priority: "média",
+    });
+    if (error) throw error;
+    return targetListId;
+  };
+
   const saveMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from("wishlist_items").insert({
-        wishlist_id: listId!,
-        name: name.trim(),
-        external_link: url.trim() || null,
-        image_url: imageUrl.trim() || null,
-        price_range: priceRange.trim() || null,
-        description: description.trim() || null,
-        priority: "média",
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wishlist-items", listId] });
+    mutationFn: createListAndSave,
+    onSuccess: (savedListId) => {
+      queryClient.invalidateQueries({ queryKey: ["wishlist-items", savedListId] });
+      queryClient.invalidateQueries({ queryKey: ["wishlists"] });
       toast.success("Item adicionado!");
-      navigate(`/lista/${listId}`, { replace: true });
+      navigate("/dashboard", { replace: true });
     },
     onError: () => toast.error("Erro ao salvar item"),
   });
