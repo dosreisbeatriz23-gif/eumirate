@@ -1,0 +1,1 @@
+ALTER TABLE public.wishlists DROP CONSTRAINT IF EXISTS wishlists_user_id_key;
