@@ -9,7 +9,7 @@ const Login = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!loading && user) navigate("/minha-lista", { replace: true });
+    if (!loading && user) navigate("/dashboard", { replace: true });
   }, [user, loading, navigate]);
 
   if (loading) {
