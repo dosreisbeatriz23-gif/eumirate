@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { useLocalUser } from "@/hooks/useLocalUser";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -26,9 +27,39 @@ const isValidUrl = (str: string) => {
 };
 
 const AddItem = () => {
-  const { id: listId } = useParams<{ id: string }>();
+  const { id: paramListId } = useParams<{ id: string }>();
+  const { userId } = useLocalUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+
+  // Check if paramListId is a valid UUID (not the literal ":id")
+  const isValidUuid = paramListId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(paramListId);
+
+  // Fetch user's first list if no valid listId from params
+  const { data: userLists } = useQuery({
+    queryKey: ["user-wishlists-for-add", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("wishlists")
+        .select("id, title")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true })
+        .limit(1);
+      if (error) throw error;
+      return data;
+    },
+    enabled: !isValidUuid,
+  });
+
+  const [resolvedListId, setResolvedListId] = useState<string | null>(isValidUuid ? paramListId! : null);
+
+  useEffect(() => {
+    if (isValidUuid && paramListId) {
+      setResolvedListId(paramListId);
+    } else if (userLists && userLists.length > 0) {
+      setResolvedListId(userLists[0].id);
+    }
+  }, [isValidUuid, paramListId, userLists]);
 
   const [url, setUrl] = useState("");
   const [extracting, setExtracting] = useState(false);
@@ -76,23 +107,41 @@ const AddItem = () => {
     }
   }, [url]);
 
+  const createListAndSave = async () => {
+    let targetListId = resolvedListId;
+
+    // If no list exists, create one automatically
+    if (!targetListId) {
+      const { data: newList, error: listError } = await supabase
+        .from("wishlists")
+        .insert({ user_id: userId, title: "Minha Lista de Desejos" })
+        .select("id")
+        .single();
+      if (listError) throw listError;
+      targetListId = newList.id;
+      setResolvedListId(targetListId);
+    }
+
+    const { error } = await supabase.from("wishlist_items").insert({
+      wishlist_id: targetListId,
+      name: name.trim(),
+      external_link: url.trim() || null,
+      image_url: imageUrl.trim() || null,
+      price_range: priceRange.trim() || null,
+      description: description.trim() || null,
+      priority: "média",
+    });
+    if (error) throw error;
+    return targetListId;
+  };
+
   const saveMutation = useMutation({
-    mutationFn: async () => {
-      const { error } = await supabase.from("wishlist_items").insert({
-        wishlist_id: listId!,
-        name: name.trim(),
-        external_link: url.trim() || null,
-        image_url: imageUrl.trim() || null,
-        price_range: priceRange.trim() || null,
-        description: description.trim() || null,
-        priority: "média",
-      });
-      if (error) throw error;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["wishlist-items", listId] });
+    mutationFn: createListAndSave,
+    onSuccess: (savedListId) => {
+      queryClient.invalidateQueries({ queryKey: ["wishlist-items", savedListId] });
+      queryClient.invalidateQueries({ queryKey: ["wishlists"] });
       toast.success("Item adicionado!");
-      navigate(`/lista/${listId}`, { replace: true });
+      navigate("/dashboard", { replace: true });
     },
     onError: () => toast.error("Erro ao salvar item"),
   });
@@ -107,7 +156,7 @@ const AddItem = () => {
     <main className="min-h-screen bg-background">
       <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
         <div className="container mx-auto px-6 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate(`/lista/${listId}`)}>
+          <Button variant="ghost" size="icon" onClick={() => navigate(resolvedListId ? `/lista/${resolvedListId}` : "/dashboard")}>
             <ArrowLeft className="w-4 h-4" />
           </Button>
           <h1 className="text-xl font-serif font-medium text-foreground">
