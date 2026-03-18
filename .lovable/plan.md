@@ -1,80 +1,37 @@
 
+Objetivo: corrigir de vez o fluxo de “Criar Lista”, que hoje parece quebrado mesmo com o clique funcionando.
 
-# EUMIRATE - Plano de Implementação
+Diagnóstico
+- O botão está disparando corretamente o submit.
+- O erro real acontece no backend: a inserção retorna `409` com `duplicate key value violates unique constraint "wishlists_user_id_key"`.
+- Isso confirma que a tabela `wishlists` ainda está configurada para permitir apenas 1 lista por `user_id`, enquanto a interface já foi construída para múltiplas listas.
 
-## Visão Geral
-Um ecossistema digital minimalista onde pessoas expressam seus desejos e criam conexões significativas através de presentes. Design clean, premium e emocionalmente acolhedor.
+Plano de correção
+1. Corrigir a estrutura do banco
+- Criar uma migration para remover a constraint única `wishlists_user_id_key` da tabela `public.wishlists`.
+- Manter o índice normal em `user_id` para continuar rápido listar as listas do usuário local.
+- Não alterar as políticas atuais agora, porque o bloqueio não é RLS; a inserção já está chegando ao banco.
 
----
+2. Ajustar o fluxo de criação no frontend
+- Manter o `insert` do `CreateList` como está, porque a lógica está correta.
+- Melhorar o `onError` para mostrar a mensagem real retornada pelo backend quando houver falha, em vez de sempre “Erro ao criar lista”.
+- Invalidar a query de listas após sucesso para garantir que “Minhas Listas” atualize imediatamente ao voltar.
 
-## 🏠 Página Inicial (Landing Page)
-- Hero section com proposta de valor do EUMIRATE
-- Mensagem acolhedora sobre o propósito da plataforma
-- Botão de chamada para ação: "Criar minha lista"
-- Visualização prévia de como uma lista se parece
+3. Revisar compatibilidade com múltiplas listas
+- Confirmar que `Dashboard` e `Categorias` continuam listando todas as listas normalmente.
+- Confirmar que `ListDetail` continua abrindo pelo `id` da lista criada.
+- Confirmar que `AddItem` continua salvando em uma lista válida sem criar conflito com a nova estrutura.
+- Manter `MeusDesejos` usando a primeira lista como lista padrão, sem quebrar o restante do app.
 
----
+4. Validar o fluxo completo
+- Criar uma primeira lista.
+- Criar uma segunda lista com outro nome.
+- Verificar se ambas aparecem em “Minhas Listas”.
+- Abrir cada lista e confirmar que a navegação funciona.
+- Salvar um item dentro de uma das listas e verificar se ele aparece no lugar certo.
 
-## 🔐 Autenticação
-- Login rápido com Google (1 clique)
-- Experiência fluida sem fricção
-- Redirecionamento automático após login
-
----
-
-## 📋 Minha Lista de Desejos
-**Funcionalidades principais:**
-- Visualização elegante dos itens desejados
-- Cada item mostra: foto, nome, descrição, faixa de preço, prioridade
-- Indicador visual de itens já reservados (sem revelar quem reservou)
-- Organização por categorias opcionais
-
-**Adicionar novo item:**
-- Formulário simples com campos: nome, descrição, faixa de preço, link externo (opcional), imagem
-- Quando colar um link, tentar extrair automaticamente título e imagem
-- Upload de foto manual como alternativa
-
----
-
-## 🔗 Compartilhamento
-- Botão para gerar link único da lista
-- Link copiável com um clique
-- Visitantes acessam sem precisar de conta
-- Página pública mostra apenas a lista (sem dados sensíveis)
-
----
-
-## 🎁 Experiência do Visitante
-- Visualiza a lista completa
-- Pode "Reservar" um presente (marcar que vai dar)
-- Após reservar, item aparece com indicador visual sutil
-- Reserva é anônima para o dono da lista (surpresa!)
-- Opção de cancelar reserva caso mude de ideia
-
----
-
-## 👤 Perfil do Usuário
-- Nome e foto (do Google)
-- Bio curta opcional ("Sobre mim")
-- Configurações básicas da conta
-- Gerenciar/deletar lista
-
----
-
-## 🎨 Design & Experiência
-- Tipografia elegante e legível
-- Muito espaço em branco
-- Cores neutras com acentos sutis
-- Animações suaves e discretas
-- Totalmente responsivo (mobile-first)
-- Interface calma, sem sobrecarga visual
-
----
-
-## 📱 Estrutura de Páginas
-1. `/` - Landing page
-2. `/login` - Autenticação
-3. `/minha-lista` - Lista pessoal (logado)
-4. `/lista/:id` - Lista pública (visitante)
-5. `/perfil` - Configurações do perfil
-
+Detalhes técnicos
+- Constraint problemática: `public.wishlists -> wishlists_user_id_key`
+- Evidência confirmada: `POST /rest/v1/wishlists` respondendo `409` com código `23505`
+- Estado atual do schema: a foreign key já foi removida, mas a unicidade em `user_id` ainda ficou ativa
+- Conclusão: o problema não é no clique do botão, e sim na regra antiga do banco que ainda impede criar mais de uma lista
