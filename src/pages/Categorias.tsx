@@ -44,7 +44,7 @@ const categoriasGerais = [
 ];
 
 const Categorias = () => {
-  const { user } = useAuth();
+  const { userId } = useLocalUser();
   const navigate = useNavigate();
 
   const { data: wishlists = [] } = useQuery({
