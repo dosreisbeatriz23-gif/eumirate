@@ -130,27 +130,15 @@ const MeusDesejos = () => {
 
   if (isLoading) {
     return (
-      <main className="min-h-screen bg-background flex items-center justify-center">
+      <div className="flex items-center justify-center py-20">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
-      </main>
+      </div>
     );
   }
 
   return (
-    <main className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-serif font-medium text-foreground">
-            <span className="text-gradient">EUMIRATE</span>
-          </h1>
-          <Button variant="outline" size="sm" onClick={handleShare} className="rounded-full">
-            {copied ? <Check className="w-4 h-4 mr-1" /> : <Share2 className="w-4 h-4 mr-1" />}
-            {copied ? "Copiado!" : "Compartilhar"}
-          </Button>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div>
+      <div className="container mx-auto px-4 md:px-6 py-8 max-w-4xl">
         <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-2xl sm:text-3xl font-serif font-medium text-foreground mb-1">
@@ -160,14 +148,20 @@ const MeusDesejos = () => {
               {items.length} {items.length === 1 ? "item" : "itens"}
             </p>
           </div>
-          <Button
-            onClick={() => navigate(`/lista/${listId}/adicionar`)}
-            className="rounded-full gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            <span className="hidden sm:inline">Adicionar Item</span>
-            <span className="sm:hidden">Adicionar</span>
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleShare} className="rounded-full">
+              {copied ? <Check className="w-4 h-4 mr-1" /> : <Share2 className="w-4 h-4 mr-1" />}
+              {copied ? "Copiado!" : "Compartilhar"}
+            </Button>
+            <Button
+              onClick={() => navigate(`/lista/${listId}/adicionar`)}
+              className="rounded-full gap-2"
+              size="sm"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Adicionar Item</span>
+            </Button>
+          </div>
         </div>
 
         {items.length === 0 ? (
@@ -217,13 +211,11 @@ const MeusDesejos = () => {
                   <h3 className="font-serif font-medium text-foreground text-base leading-tight line-clamp-2">
                     {item.name}
                   </h3>
-
                   {item.price_range && (
                     <span className="inline-block text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
                       {item.price_range}
                     </span>
                   )}
-
                   <div className="flex items-center gap-1 pt-1">
                     {item.external_link && (
                       <Button variant="ghost" size="icon" className="h-8 w-8" asChild>

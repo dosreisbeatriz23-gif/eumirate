@@ -4,7 +4,6 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import {
-  ArrowLeft,
   Users,
   Heart,
   Briefcase,
@@ -61,19 +60,8 @@ const Categorias = () => {
   });
 
   return (
-    <main className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/meus-desejos")}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <h1 className="text-xl font-serif font-medium text-foreground">
-            <span className="text-gradient">EUMIRATE</span>
-          </h1>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-4 py-8 max-w-2xl space-y-10">
+    <div>
+      <div className="container mx-auto px-4 md:px-6 py-8 max-w-2xl space-y-10">
         {/* Grupos */}
         <section>
           <h2 className="text-xl font-serif font-medium text-foreground mb-4">Grupos</h2>

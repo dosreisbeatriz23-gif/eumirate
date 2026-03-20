@@ -21,7 +21,6 @@ import { toast } from "sonner";
 import {
   Plus,
   Gift,
-  ArrowLeft,
   ExternalLink,
   Trash2,
   Share2,
@@ -125,44 +124,34 @@ const ListDetail = () => {
   };
 
   return (
-    <main className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-              <ArrowLeft className="w-4 h-4" />
-            </Button>
-            <h1 className="text-xl font-serif font-medium text-foreground">
-              <span className="text-gradient">EUMIRATE</span>
-            </h1>
-          </div>
-          <Button variant="outline" size="sm" onClick={handleShare} className="rounded-full">
-            {copied ? <Check className="w-4 h-4 mr-1" /> : <Share2 className="w-4 h-4 mr-1" />}
-            {copied ? "Copiado!" : "Compartilhar"}
-          </Button>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-6 py-10 max-w-4xl">
-        <div className="flex items-center justify-between mb-10">
+    <div>
+      <div className="container mx-auto px-4 md:px-6 py-8 md:py-10 max-w-4xl">
+        <div className="flex items-center justify-between mb-8">
           <div>
-            <h2 className="text-3xl sm:text-4xl font-serif font-medium text-foreground mb-1">
+            <h2 className="text-2xl sm:text-3xl font-serif font-medium text-foreground mb-1">
               {wishlist?.title ?? "..."}
             </h2>
             {wishlist?.description && (
-              <p className="text-muted-foreground">{wishlist.description}</p>
+              <p className="text-muted-foreground text-sm">{wishlist.description}</p>
             )}
             <p className="text-sm text-muted-foreground mt-1">
               {items.length} {items.length === 1 ? "item" : "itens"}
             </p>
           </div>
-          <Button
-            onClick={() => navigate(`/lista/${id}/adicionar`)}
-            className="rounded-full gap-2"
-          >
-            <Plus className="w-4 h-4" />
-            Adicionar Item
-          </Button>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={handleShare} className="rounded-full">
+              {copied ? <Check className="w-4 h-4 mr-1" /> : <Share2 className="w-4 h-4 mr-1" />}
+              {copied ? "Copiado!" : "Compartilhar"}
+            </Button>
+            <Button
+              onClick={() => navigate(`/lista/${id}/adicionar`)}
+              className="rounded-full gap-2"
+              size="sm"
+            >
+              <Plus className="w-4 h-4" />
+              <span className="hidden sm:inline">Adicionar Item</span>
+            </Button>
+          </div>
         </div>
 
         {isLoading ? (
@@ -210,13 +199,11 @@ const ListDetail = () => {
                   <h3 className="font-serif font-medium text-foreground text-base leading-tight line-clamp-2">
                     {item.name}
                   </h3>
-
                   {item.price_range && (
                     <span className="inline-block text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
                       {item.price_range}
                     </span>
                   )}
-
                   <div className="flex items-center gap-1 pt-1">
                     {item.external_link && (
                       <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
