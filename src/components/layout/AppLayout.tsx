@@ -10,7 +10,7 @@ const desktopLinks = [
 ];
 
 const mobileTabs = [
-  { label: "Home", icon: Home, path: "/dashboard" },
+  { label: "Home", icon: Home, path: "/home" },
   { label: "Listas", icon: List, path: "/meus-desejos" },
   { label: "Adicionar", icon: PlusCircle, path: "/adicionar" },
   { label: "Grupos", icon: Users, path: "/grupos" },

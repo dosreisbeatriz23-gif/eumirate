@@ -30,6 +30,7 @@ const App = () => (
 
           {/* App pages with shared layout */}
           <Route element={<AppLayout />}>
+            <Route path="/home" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/criar-lista" element={<CreateList />} />
             <Route path="/lista/:id" element={<ListDetail />} />
