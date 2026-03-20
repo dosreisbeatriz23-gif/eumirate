@@ -68,6 +68,7 @@ const AddItem = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [priceRange, setPriceRange] = useState("");
   const [description, setDescription] = useState("");
+  const [visibility, setVisibility] = useState<"private" | "group">("private");
 
   const extractMetadata = async (targetUrl: string) => {
     if (!targetUrl.trim() || !isValidUrl(targetUrl)) return;
