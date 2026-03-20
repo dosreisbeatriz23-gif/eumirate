@@ -1,80 +1,69 @@
 
 
-# EUMIRATE - Plano de Implementação
+## Plano: Estrutura Completa de Navegacao EUMIRATE
 
-## Visão Geral
-Um ecossistema digital minimalista onde pessoas expressam seus desejos e criam conexões significativas através de presentes. Design clean, premium e emocionalmente acolhedor.
+### O que sera feito
 
----
+Criar um layout responsivo com navegacao global que envolve todas as paginas internas do app, separando desktop (header fixo com menu) e mobile (bottom tab bar com icones).
 
-## 🏠 Página Inicial (Landing Page)
-- Hero section com proposta de valor do EUMIRATE
-- Mensagem acolhedora sobre o propósito da plataforma
-- Botão de chamada para ação: "Criar minha lista"
-- Visualização prévia de como uma lista se parece
+### Estrutura
 
----
+```text
+App.tsx
+  └─ AppLayout (wrapper com navegacao)
+       ├─ Desktop: Header fixo (logo + menu horizontal)
+       ├─ Mobile: Bottom tab bar (5 icones)
+       └─ <Outlet /> (conteudo da pagina)
+```
 
-## 🔐 Autenticação
-- Login rápido com Google (1 clique)
-- Experiência fluida sem fricção
-- Redirecionamento automático após login
+**Desktop Header**: Logo "Eumirate" a esquerda, links a direita: Criar Lista, Minhas Listas, Grupos, Perfil.
 
----
+**Mobile Bottom Bar**: 5 tabs com icones - Home (`Home`), Listas (`List`), Adicionar (`PlusCircle`), Grupos (`Users`), Perfil (`User`).
 
-## 📋 Minha Lista de Desejos
-**Funcionalidades principais:**
-- Visualização elegante dos itens desejados
-- Cada item mostra: foto, nome, descrição, faixa de preço, prioridade
-- Indicador visual de itens já reservados (sem revelar quem reservou)
-- Organização por categorias opcionais
+### Arquivos a criar/editar
 
-**Adicionar novo item:**
-- Formulário simples com campos: nome, descrição, faixa de preço, link externo (opcional), imagem
-- Quando colar um link, tentar extrair automaticamente título e imagem
-- Upload de foto manual como alternativa
+1. **Criar `src/components/layout/AppLayout.tsx`**
+   - Componente com header desktop (hidden no mobile) e bottom bar mobile (hidden no desktop)
+   - Header: sticky top, logo clicavel, nav links com destaque no ativo
+   - Bottom bar: fixed bottom, 5 icones com label pequeno, destaque no ativo
+   - Padding-bottom no conteudo mobile para nao cobrir a tab bar
+   - Usa `useLocation` para destacar a tab ativa
 
----
+2. **Criar `src/pages/Perfil.tsx`**
+   - Pagina simples de perfil placeholder com nome do usuario local e opcoes basicas
 
-## 🔗 Compartilhamento
-- Botão para gerar link único da lista
-- Link copiável com um clique
-- Visitantes acessam sem precisar de conta
-- Página pública mostra apenas a lista (sem dados sensíveis)
+3. **Criar `src/pages/Grupos.tsx`**
+   - Mover o conteudo de grupos que esta em `Categorias.tsx` para esta pagina dedicada
 
----
+4. **Editar `src/App.tsx`**
+   - Criar rota agrupada com `AppLayout` como layout pai usando nested routes
+   - Redirecionar `/` para landing (sem layout) e paginas internas com layout
+   - Adicionar rotas: `/grupos`, `/perfil`
+   - Manter `/` (landing) e `*` (404) fora do layout
 
-## 🎁 Experiência do Visitante
-- Visualiza a lista completa
-- Pode "Reservar" um presente (marcar que vai dar)
-- Após reservar, item aparece com indicador visual sutil
-- Reserva é anônima para o dono da lista (surpresa!)
-- Opção de cancelar reserva caso mude de ideia
+5. **Editar paginas existentes** (Dashboard, CreateList, ListDetail, AddItem, MeusDesejos, Categorias)
+   - Remover headers individuais duplicados (logo + back button) de cada pagina
+   - O header agora vem do AppLayout
+   - Manter apenas o conteudo interno de cada pagina
 
----
+### Mapeamento de rotas
 
-## 👤 Perfil do Usuário
-- Nome e foto (do Google)
-- Bio curta opcional ("Sobre mim")
-- Configurações básicas da conta
-- Gerenciar/deletar lista
+| Rota | Pagina | Tab ativa (mobile) |
+|------|--------|-------------------|
+| /dashboard | Dashboard (Minhas Listas) | Listas |
+| /criar-lista | CreateList | Listas |
+| /lista/:id | ListDetail | Listas |
+| /lista/:id/adicionar | AddItem | Adicionar |
+| /meus-desejos | MeusDesejos | Listas |
+| /categorias | Categorias | Home |
+| /grupos | Grupos | Grupos |
+| /perfil | Perfil | Perfil |
 
----
+### Design
 
-## 🎨 Design & Experiência
-- Tipografia elegante e legível
-- Muito espaço em branco
-- Cores neutras com acentos sutis
-- Animações suaves e discretas
-- Totalmente responsivo (mobile-first)
-- Interface calma, sem sobrecarga visual
-
----
-
-## 📱 Estrutura de Páginas
-1. `/` - Landing page
-2. `/login` - Autenticação
-3. `/minha-lista` - Lista pessoal (logado)
-4. `/lista/:id` - Lista pública (visitante)
-5. `/perfil` - Configurações do perfil
+- Header desktop: bg-card/50 backdrop-blur, border-bottom sutil, altura ~60px
+- Bottom bar mobile: bg-card border-top, altura ~64px, icones 20px, labels 10px
+- Tab ativa: cor primary, inativa: muted-foreground
+- Transicoes suaves nos icones
+- Conteudo com padding-bottom de 80px no mobile
 
