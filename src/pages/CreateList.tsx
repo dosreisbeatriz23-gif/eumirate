@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useLocalUser } from "@/hooks/useLocalUser";
 import { useNavigate } from "react-router-dom";
@@ -7,11 +7,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
 
 const CreateList = () => {
   const { userId } = useLocalUser();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
@@ -30,6 +30,7 @@ const CreateList = () => {
       return data;
     },
     onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ["wishlists"] });
       toast.success("Lista criada!");
       navigate(`/lista/${data.id}`, { replace: true });
     },
@@ -42,19 +43,8 @@ const CreateList = () => {
   };
 
   return (
-    <main className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center gap-3">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/dashboard")}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <h1 className="text-xl font-serif font-medium text-foreground">
-            <span className="text-gradient">EUMIRATE</span>
-          </h1>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-6 py-10 max-w-lg">
+    <div>
+      <div className="container mx-auto px-4 md:px-6 py-8 md:py-10 max-w-lg">
         <h2 className="text-3xl font-serif font-medium text-foreground mb-8">
           Criar Nova Lista
         </h2>
@@ -93,7 +83,7 @@ const CreateList = () => {
           </Button>
         </form>
       </div>
-    </main>
+    </div>
   );
 };
 

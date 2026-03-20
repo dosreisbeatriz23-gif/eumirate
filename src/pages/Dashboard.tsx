@@ -42,16 +42,8 @@ const Dashboard = () => {
     allItems.filter((i) => i.wishlist_id === wishlistId);
 
   return (
-    <main className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 py-4 flex items-center justify-between">
-          <h1 className="text-xl font-serif font-medium text-foreground">
-            <span className="text-gradient">EUMIRATE</span>
-          </h1>
-        </div>
-      </header>
-
-      <div className="container mx-auto px-6 py-10 max-w-5xl">
+    <div>
+      <div className="container mx-auto px-4 md:px-6 py-8 md:py-10 max-w-5xl">
         <div className="flex items-center justify-between mb-10">
           <div>
             <h2 className="text-3xl sm:text-4xl font-serif font-medium text-foreground mb-1">
@@ -129,7 +121,7 @@ const Dashboard = () => {
           </div>
         )}
       </div>
-    </main>
+    </div>
   );
 };
 
