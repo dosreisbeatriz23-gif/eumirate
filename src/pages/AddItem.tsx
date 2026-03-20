@@ -273,7 +273,7 @@ const AddItem = () => {
           </Button>
         </form>
       </div>
-    </main>
+    </div>
   );
 };
 

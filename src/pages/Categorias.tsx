@@ -142,7 +142,7 @@ const Categorias = () => {
           )}
         </section>
       </div>
-    </main>
+    </div>
   );
 };
 

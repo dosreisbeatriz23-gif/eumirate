@@ -93,7 +93,7 @@ const CreateList = () => {
           </Button>
         </form>
       </div>
-    </main>
+    </div>
   );
 };
 

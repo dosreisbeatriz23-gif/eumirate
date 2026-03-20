@@ -289,7 +289,7 @@ const ListDetail = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </main>
+    </div>
   );
 };
 

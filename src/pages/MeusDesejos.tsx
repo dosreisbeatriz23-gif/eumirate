@@ -296,7 +296,7 @@ const MeusDesejos = () => {
           </div>
         </DialogContent>
       </Dialog>
-    </main>
+    </div>
   );
 };
 
