@@ -127,6 +127,7 @@ const AddItem = () => {
       price_range: priceRange.trim() || null,
       description: description.trim() || null,
       priority: "média",
+      visibility,
     });
     if (error) throw error;
     return targetListId;
