@@ -3,6 +3,7 @@ import { Home, List, PlusCircle, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const desktopLinks = [
+  { label: "Home", path: "/home" },
   { label: "Criar Lista", path: "/criar-lista" },
   { label: "Minhas Listas", path: "/dashboard" },
   { label: "Grupos", path: "/grupos" },
@@ -10,7 +11,7 @@ const desktopLinks = [
 ];
 
 const mobileTabs = [
-  { label: "Home", icon: Home, path: "/dashboard" },
+  { label: "Home", icon: Home, path: "/home" },
   { label: "Listas", icon: List, path: "/meus-desejos" },
   { label: "Adicionar", icon: PlusCircle, path: "/adicionar" },
   { label: "Grupos", icon: Users, path: "/grupos" },
@@ -18,6 +19,7 @@ const mobileTabs = [
 ];
 
 function isActive(current: string, path: string) {
+  if (path === "/home") return current === "/home";
   if (path === "/dashboard") return current === "/dashboard" || current === "/meus-desejos";
   if (path === "/meus-desejos") return current === "/meus-desejos" || current.startsWith("/lista/");
   return current.startsWith(path);

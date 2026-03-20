@@ -5,6 +5,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import AppLayout from "./components/layout/AppLayout";
+import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import CreateList from "./pages/CreateList";
 import ListDetail from "./pages/ListDetail";
@@ -29,6 +30,7 @@ const App = () => (
 
           {/* App pages with shared layout */}
           <Route element={<AppLayout />}>
+            <Route path="/home" element={<Home />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/criar-lista" element={<CreateList />} />
             <Route path="/lista/:id" element={<ListDetail />} />
