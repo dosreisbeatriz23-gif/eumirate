@@ -3,6 +3,7 @@ import { Home, List, PlusCircle, Users, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const desktopLinks = [
+  { label: "Home", path: "/home" },
   { label: "Criar Lista", path: "/criar-lista" },
   { label: "Minhas Listas", path: "/dashboard" },
   { label: "Grupos", path: "/grupos" },
