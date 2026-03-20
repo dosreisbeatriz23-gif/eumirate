@@ -19,6 +19,7 @@ const mobileTabs = [
 ];
 
 function isActive(current: string, path: string) {
+  if (path === "/home") return current === "/home";
   if (path === "/dashboard") return current === "/dashboard" || current === "/meus-desejos";
   if (path === "/meus-desejos") return current === "/meus-desejos" || current.startsWith("/lista/");
   return current.startsWith(path);
