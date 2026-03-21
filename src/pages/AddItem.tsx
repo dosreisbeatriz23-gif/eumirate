@@ -111,7 +111,7 @@ const AddItem = () => {
     if (!targetListId) {
       const { data: newList, error: listError } = await supabase
         .from("wishlists")
-        .insert({ user_id: userId, title: "Minha Lista de Desejos" })
+        .insert({ user_id: userId, title: "Meu Wishlist Geral" })
         .select("id")
         .single();
       if (listError) throw listError;
