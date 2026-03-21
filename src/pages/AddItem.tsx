@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Link as LinkIcon, Loader2, Gift, Save } from "lucide-react";
+import { Link as LinkIcon, Loader2, Gift, Save, Lock, Users } from "lucide-react";
 
 interface ExtractedMeta {
   title: string | null;
@@ -68,6 +68,7 @@ const AddItem = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [priceRange, setPriceRange] = useState("");
   const [description, setDescription] = useState("");
+  const [visibility, setVisibility] = useState<"private" | "group">("private");
 
   const extractMetadata = async (targetUrl: string) => {
     if (!targetUrl.trim() || !isValidUrl(targetUrl)) return;
@@ -110,7 +111,7 @@ const AddItem = () => {
     if (!targetListId) {
       const { data: newList, error: listError } = await supabase
         .from("wishlists")
-        .insert({ user_id: userId, title: "Minha Lista de Desejos" })
+        .insert({ user_id: userId, title: "Meu Wishlist Geral" })
         .select("id")
         .single();
       if (listError) throw listError;
@@ -126,6 +127,7 @@ const AddItem = () => {
       price_range: priceRange.trim() || null,
       description: description.trim() || null,
       priority: "média",
+      visibility,
     });
     if (error) throw error;
     return targetListId;
@@ -217,6 +219,35 @@ const AddItem = () => {
           <div>
             <label className="text-sm font-medium text-foreground mb-1.5 block">Preço</label>
             <Input placeholder="R$ 100 - 200" value={priceRange} onChange={(e) => setPriceRange(e.target.value)} maxLength={50} />
+          </div>
+          <div>
+            <label className="text-sm font-medium text-foreground mb-2 block">Visibilidade</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setVisibility("private")}
+                className={`flex items-center gap-2 rounded-xl p-3 border text-sm font-medium transition-all ${
+                  visibility === "private"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/30"
+                }`}
+              >
+                <Lock className="w-4 h-4" />
+                Privado
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisibility("group")}
+                className={`flex items-center gap-2 rounded-xl p-3 border text-sm font-medium transition-all ${
+                  visibility === "group"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/30"
+                }`}
+              >
+                <Users className="w-4 h-4" />
+                Grupos
+              </button>
+            </div>
           </div>
           <Button type="submit" className="w-full rounded-xl gap-2" disabled={saveMutation.isPending}>
             <Save className="w-4 h-4" />

@@ -88,6 +88,7 @@ export type Database = {
           price_range: string | null
           priority: string | null
           updated_at: string
+          visibility: string
           wishlist_id: string
         }
         Insert: {
@@ -101,6 +102,7 @@ export type Database = {
           price_range?: string | null
           priority?: string | null
           updated_at?: string
+          visibility?: string
           wishlist_id: string
         }
         Update: {
@@ -114,6 +116,7 @@ export type Database = {
           price_range?: string | null
           priority?: string | null
           updated_at?: string
+          visibility?: string
           wishlist_id?: string
         }
         Relationships: [
