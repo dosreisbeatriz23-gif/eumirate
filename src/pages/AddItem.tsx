@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Link as LinkIcon, Loader2, Gift, Save } from "lucide-react";
+import { Link as LinkIcon, Loader2, Gift, Save, Lock, Users } from "lucide-react";
 
 interface ExtractedMeta {
   title: string | null;
