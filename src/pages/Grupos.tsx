@@ -184,7 +184,7 @@ const Grupos = () => {
                   variant="ghost"
                   size="icon"
                   className="shrink-0 h-9 w-9 rounded-xl"
-                  onClick={() => copyInviteLink(group.invite_code, group.id)}
+                  onClick={(e) => { e.stopPropagation(); copyInviteLink(group.invite_code, group.id); }}
                 >
                   {copiedId === group.id ? (
                     <Check className="w-4 h-4 text-primary" />
