@@ -1,45 +1,249 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useLocalUser } from "@/hooks/useLocalUser";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Users,
   Heart,
-  Briefcase,
-  HeartHandshake,
-  Star,
-  Plane,
-  Settings2,
   Home,
+  Plus,
+  Copy,
+  Check,
+  Crown,
+  UserPlus,
 } from "lucide-react";
+import { toast } from "sonner";
 
-const grupos = [
-  { label: "Família", icon: Home, color: "bg-primary/15 text-primary" },
-  { label: "Amigos", icon: Users, color: "bg-secondary text-secondary-foreground" },
-  { label: "Trabalho", icon: Briefcase, color: "bg-accent text-accent-foreground" },
-  { label: "Casal", icon: Heart, color: "bg-primary/15 text-primary" },
-  { label: "Melhores Amigos", icon: Star, color: "bg-secondary text-secondary-foreground" },
-  { label: "Viagem em Grupo", icon: Plane, color: "bg-accent text-accent-foreground" },
-  { label: "Grupo Personalizado", icon: Settings2, color: "bg-muted text-muted-foreground" },
+const defaultSuggestions = [
+  { name: "Família", icon: Home, color: "bg-primary/10 text-primary border-primary/20" },
+  { name: "Amigos", icon: Users, color: "bg-secondary text-secondary-foreground border-secondary" },
+  { name: "Casal", icon: Heart, color: "bg-accent text-accent-foreground border-accent" },
 ];
 
 const Grupos = () => {
+  const { userId } = useLocalUser();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+
+  const [showCreate, setShowCreate] = useState(false);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const { data: groups = [], isLoading } = useQuery({
+    queryKey: ["groups", userId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("groups")
+        .select("*, group_members(count)")
+        .eq("owner_id", userId)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const createGroup = useMutation({
+    mutationFn: async ({ name, description }: { name: string; description: string }) => {
+      const { data, error } = await supabase
+        .from("groups")
+        .insert({ name, description: description || null, owner_id: userId })
+        .select()
+        .single();
+      if (error) throw error;
+
+      // Add owner as member
+      await supabase
+        .from("group_members")
+        .insert({ group_id: data.id, user_id: userId, role: "owner" });
+
+      return data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups", userId] });
+      setShowCreate(false);
+      setName("");
+      setDescription("");
+      toast.success("Grupo criado com sucesso!");
+    },
+    onError: () => toast.error("Erro ao criar grupo"),
+  });
+
+  const handleQuickCreate = (groupName: string) => {
+    setName(groupName);
+    setShowCreate(true);
+  };
+
+  const copyInviteLink = (inviteCode: string, groupId: string) => {
+    const link = `${window.location.origin}/grupo/convite/${inviteCode}`;
+    navigator.clipboard.writeText(link);
+    setCopiedId(groupId);
+    toast.success("Link copiado!");
+    setTimeout(() => setCopiedId(null), 2000);
+  };
+
+  const existingNames = groups.map((g: any) => g.name);
+  const suggestions = defaultSuggestions.filter((s) => !existingNames.includes(s.name));
 
   return (
-    <div className="container mx-auto px-4 md:px-6 py-8 max-w-2xl">
-      <h2 className="text-2xl sm:text-3xl font-serif font-medium text-foreground mb-6">
-        Grupos
-      </h2>
-      <div className="grid grid-cols-2 gap-3">
-        {grupos.map((g) => (
-          <button
-            key={g.label}
-            onClick={() => navigate(`/criar-lista?grupo=${encodeURIComponent(g.label)}`)}
-            className={`flex items-center gap-3 rounded-2xl p-4 text-left transition-all hover:scale-[1.02] active:scale-[0.98] ${g.color} border border-border/30`}
-          >
-            <g.icon className="w-5 h-5 shrink-0" />
-            <span className="text-sm font-medium leading-tight">{g.label}</span>
-          </button>
-        ))}
+    <div className="container mx-auto px-4 md:px-6 py-8 max-w-2xl space-y-8">
+      {/* Header */}
+      <div className="flex items-center justify-between">
+        <h2 className="text-2xl sm:text-3xl font-serif font-medium text-foreground">
+          Meus Grupos
+        </h2>
+        <Button
+          onClick={() => setShowCreate(true)}
+          className="rounded-full gap-2"
+          size="sm"
+        >
+          <Plus className="w-4 h-4" />
+          Criar Grupo
+        </Button>
       </div>
+
+      {/* Suggestions */}
+      {suggestions.length > 0 && (
+        <section>
+          <p className="text-sm text-muted-foreground mb-3">Sugestões para você</p>
+          <div className="flex flex-wrap gap-2">
+            {suggestions.map((s) => (
+              <button
+                key={s.name}
+                onClick={() => handleQuickCreate(s.name)}
+                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium border transition-all hover:scale-[1.03] active:scale-[0.97] ${s.color}`}
+              >
+                <s.icon className="w-4 h-4" />
+                {s.name}
+              </button>
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Groups list */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2].map((i) => (
+            <div key={i} className="h-20 rounded-2xl bg-muted/50 animate-pulse" />
+          ))}
+        </div>
+      ) : groups.length === 0 ? (
+        <div className="text-center py-16">
+          <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+          <p className="text-muted-foreground text-sm">Você ainda não tem grupos</p>
+          <p className="text-muted-foreground/60 text-xs mt-1">
+            Crie um grupo para compartilhar desejos
+          </p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {groups.map((group: any) => {
+            const memberCount = group.group_members?.[0]?.count || 1;
+            return (
+              <div
+                key={group.id}
+                className="flex items-center gap-4 rounded-2xl p-4 bg-card border border-border/50 transition-all hover:border-primary/20"
+              >
+                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                  <Users className="w-5 h-5 text-primary" />
+                </div>
+
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <h3 className="font-medium text-foreground text-sm truncate">
+                      {group.name}
+                    </h3>
+                    <Crown className="w-3.5 h-3.5 text-primary/60 shrink-0" />
+                  </div>
+                  {group.description && (
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">
+                      {group.description}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-1 mt-1">
+                    <UserPlus className="w-3 h-3 text-muted-foreground/60" />
+                    <span className="text-xs text-muted-foreground/60">
+                      {memberCount} {memberCount === 1 ? "membro" : "membros"}
+                    </span>
+                  </div>
+                </div>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0 h-9 w-9 rounded-xl"
+                  onClick={() => copyInviteLink(group.invite_code, group.id)}
+                >
+                  {copiedId === group.id ? (
+                    <Check className="w-4 h-4 text-primary" />
+                  ) : (
+                    <Copy className="w-4 h-4 text-muted-foreground" />
+                  )}
+                </Button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {/* Create Dialog */}
+      <Dialog open={showCreate} onOpenChange={setShowCreate}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="font-serif">Criar Grupo</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!name.trim()) return;
+              createGroup.mutate({ name: name.trim(), description: description.trim() });
+            }}
+            className="space-y-4 mt-2"
+          >
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">
+                Nome do grupo
+              </label>
+              <Input
+                placeholder="Ex: Família, Amigos do trabalho..."
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">
+                Descrição <span className="text-muted-foreground font-normal">(opcional)</span>
+              </label>
+              <Textarea
+                placeholder="Uma breve descrição do grupo..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className="resize-none"
+              />
+            </div>
+            <Button
+              type="submit"
+              className="w-full rounded-xl"
+              disabled={!name.trim() || createGroup.isPending}
+            >
+              {createGroup.isPending ? "Criando..." : "Criar Grupo"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
