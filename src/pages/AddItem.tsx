@@ -220,6 +220,35 @@ const AddItem = () => {
             <label className="text-sm font-medium text-foreground mb-1.5 block">Preço</label>
             <Input placeholder="R$ 100 - 200" value={priceRange} onChange={(e) => setPriceRange(e.target.value)} maxLength={50} />
           </div>
+          <div>
+            <label className="text-sm font-medium text-foreground mb-2 block">Visibilidade</label>
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setVisibility("private")}
+                className={`flex items-center gap-2 rounded-xl p-3 border text-sm font-medium transition-all ${
+                  visibility === "private"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/30"
+                }`}
+              >
+                <Lock className="w-4 h-4" />
+                Privado
+              </button>
+              <button
+                type="button"
+                onClick={() => setVisibility("group")}
+                className={`flex items-center gap-2 rounded-xl p-3 border text-sm font-medium transition-all ${
+                  visibility === "group"
+                    ? "border-primary bg-primary/10 text-primary"
+                    : "border-border text-muted-foreground hover:border-primary/30"
+                }`}
+              >
+                <Users className="w-4 h-4" />
+                Grupos
+              </button>
+            </div>
+          </div>
           <Button type="submit" className="w-full rounded-xl gap-2" disabled={saveMutation.isPending}>
             <Save className="w-4 h-4" />
             {saveMutation.isPending ? "Salvando..." : "Salvar Item"}
