@@ -6,9 +6,23 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent } from "@/components/ui/card";
 import { toast } from "sonner";
-import { Link as LinkIcon, Loader2, Gift, Save, Lock, Users } from "lucide-react";
+import {
+  Link as LinkIcon,
+  Loader2,
+  Gift,
+  Save,
+  Lock,
+  Users,
+  ShoppingBag,
+  Sparkles,
+  ChevronDown,
+  ChevronUp,
+  Star,
+  ArrowUp,
+  ArrowDown,
+  Check,
+} from "lucide-react";
 
 interface ExtractedMeta {
   title: string | null;
@@ -26,13 +40,26 @@ const isValidUrl = (str: string) => {
   }
 };
 
+const priorities = [
+  { value: "alta", label: "Alta", icon: ArrowUp, color: "text-red-500 bg-red-50 border-red-200" },
+  { value: "média", label: "Média", icon: Star, color: "text-amber-500 bg-amber-50 border-amber-200" },
+  { value: "baixa", label: "Baixa", icon: ArrowDown, color: "text-emerald-500 bg-emerald-50 border-emerald-200" },
+];
+
+const types = [
+  { value: "produto", label: "Produto", icon: ShoppingBag, desc: "Item físico ou digital" },
+  { value: "experiência", label: "Experiência", icon: Sparkles, desc: "Viagem, evento, etc." },
+];
+
 const AddItem = () => {
   const { id: paramListId } = useParams<{ id: string }>();
   const { userId } = useLocalUser();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 
-  const isValidUuid = paramListId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(paramListId);
+  const isValidUuid =
+    paramListId &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(paramListId);
 
   const { data: userLists } = useQuery({
     queryKey: ["user-wishlists-for-add", userId],
@@ -49,7 +76,9 @@ const AddItem = () => {
     enabled: !isValidUuid,
   });
 
-  const [resolvedListId, setResolvedListId] = useState<string | null>(isValidUuid ? paramListId! : null);
+  const [resolvedListId, setResolvedListId] = useState<string | null>(
+    isValidUuid ? paramListId! : null
+  );
 
   useEffect(() => {
     if (isValidUuid && paramListId) {
@@ -59,8 +88,10 @@ const AddItem = () => {
     }
   }, [isValidUuid, paramListId, userLists]);
 
+  // Form state
   const [url, setUrl] = useState("");
   const [extracting, setExtracting] = useState(false);
+  const [extracted, setExtracted] = useState(false);
   const [meta, setMeta] = useState<ExtractedMeta | null>(null);
   const lastExtractedUrl = useRef("");
 
@@ -68,13 +99,17 @@ const AddItem = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [priceRange, setPriceRange] = useState("");
   const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState("média");
+  const [itemType, setItemType] = useState("produto");
   const [visibility, setVisibility] = useState<"private" | "group">("private");
+  const [showDetails, setShowDetails] = useState(false);
 
   const extractMetadata = async (targetUrl: string) => {
     if (!targetUrl.trim() || !isValidUrl(targetUrl)) return;
     if (lastExtractedUrl.current === targetUrl.trim()) return;
     lastExtractedUrl.current = targetUrl.trim();
     setExtracting(true);
+    setExtracted(false);
     try {
       const { data, error } = await supabase.functions.invoke("extract-link-metadata", {
         body: { url: targetUrl.trim() },
@@ -87,7 +122,8 @@ const AddItem = () => {
         setImageUrl(d.image ?? "");
         setDescription(d.description ?? "");
         setPriceRange(d.price ? `R$ ${d.price}` : "");
-        toast.success("Dados extraídos!");
+        setExtracted(true);
+        toast.success("Dados extraídos automaticamente!");
       } else {
         toast.error("Não foi possível extrair dados do link");
       }
@@ -100,14 +136,13 @@ const AddItem = () => {
 
   useEffect(() => {
     if (isValidUrl(url) && url.trim() !== lastExtractedUrl.current) {
-      const timeout = setTimeout(() => extractMetadata(url), 400);
+      const timeout = setTimeout(() => extractMetadata(url), 500);
       return () => clearTimeout(timeout);
     }
   }, [url]);
 
   const createListAndSave = async () => {
     let targetListId = resolvedListId;
-
     if (!targetListId) {
       const { data: newList, error: listError } = await supabase
         .from("wishlists")
@@ -126,7 +161,7 @@ const AddItem = () => {
       image_url: imageUrl.trim() || null,
       price_range: priceRange.trim() || null,
       description: description.trim() || null,
-      priority: "média",
+      priority,
       visibility,
     });
     if (error) throw error;
@@ -138,123 +173,253 @@ const AddItem = () => {
     onSuccess: (savedListId) => {
       queryClient.invalidateQueries({ queryKey: ["wishlist-items", savedListId] });
       queryClient.invalidateQueries({ queryKey: ["wishlists"] });
-      toast.success("Item adicionado!");
-      navigate("/dashboard", { replace: true });
+      toast.success("Item adicionado com sucesso!");
+      navigate("/meus-desejos", { replace: true });
     },
     onError: () => toast.error("Erro ao salvar item"),
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name.trim()) return toast.error("Nome é obrigatório");
+    if (!name.trim()) return toast.error("Dê um nome ao item");
     saveMutation.mutate();
   };
 
+  const hasPreview = !!(meta || name);
+
   return (
-    <div>
-      <div className="container mx-auto px-4 md:px-6 py-8 md:py-10 max-w-lg">
-        <h2 className="text-3xl font-serif font-medium text-foreground mb-8">
+    <div className="container mx-auto px-4 md:px-6 py-6 md:py-10 max-w-lg">
+      {/* Title */}
+      <div className="text-center mb-8">
+        <h2 className="text-2xl md:text-3xl font-serif font-medium text-foreground">
           Adicionar Item
         </h2>
+        <p className="text-sm text-muted-foreground mt-1">
+          Cole um link ou preencha manualmente
+        </p>
+      </div>
 
-        <div className="space-y-4 mb-8">
-          <label className="text-sm font-medium text-foreground block">
-            Cole o link do produto
-          </label>
-          <div className="relative">
-            <LinkIcon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="https://..."
-              value={url}
-              onChange={(e) => setUrl(e.target.value)}
-              className="pl-9 pr-10"
-              autoFocus
-            />
-            {extracting && (
-              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 animate-spin text-muted-foreground" />
+      {/* Link Input */}
+      <div className="mb-6">
+        <div className="relative group">
+          <LinkIcon className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground transition-colors group-focus-within:text-primary" />
+          <Input
+            placeholder="Cole o link do produto aqui..."
+            value={url}
+            onChange={(e) => setUrl(e.target.value)}
+            className="pl-10 pr-12 h-12 rounded-xl border-border/60 bg-card text-base focus:border-primary transition-all"
+            autoFocus
+          />
+          {extracting && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-1.5">
+              <Loader2 className="w-4 h-4 animate-spin text-primary" />
+              <span className="text-xs text-muted-foreground">Buscando...</span>
+            </div>
+          )}
+          {extracted && !extracting && (
+            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+              <Check className="w-5 h-5 text-emerald-500" />
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Preview Card */}
+      {hasPreview && (
+        <div className="rounded-2xl overflow-hidden border border-border/40 bg-card shadow-[var(--shadow-soft)] mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+          {imageUrl ? (
+            <div className="h-44 bg-muted overflow-hidden relative">
+              <img
+                src={imageUrl}
+                alt={name}
+                className="w-full h-full object-cover"
+                onError={(e) => {
+                  (e.target as HTMLImageElement).style.display = "none";
+                }}
+              />
+            </div>
+          ) : (
+            <div className="h-32 bg-muted/30 flex items-center justify-center">
+              <Gift className="w-10 h-10 text-muted-foreground/20" />
+            </div>
+          )}
+          <div className="p-4 space-y-1.5">
+            <h3 className="font-serif font-medium text-foreground text-lg leading-tight line-clamp-2">
+              {name || "Sem título"}
+            </h3>
+            {description && (
+              <p className="text-sm text-muted-foreground line-clamp-2">{description}</p>
+            )}
+            {priceRange && (
+              <span className="inline-block text-sm font-medium bg-primary/10 text-primary px-2.5 py-0.5 rounded-full">
+                {priceRange}
+              </span>
             )}
           </div>
         </div>
+      )}
 
-        {(meta || name) && (
-          <Card className="rounded-2xl overflow-hidden border-border/50 mb-8">
-            {imageUrl ? (
-              <div className="h-48 bg-muted overflow-hidden">
-                <img src={imageUrl} alt={name} className="w-full h-full object-cover" />
-              </div>
-            ) : (
-              <div className="h-48 bg-muted/50 flex items-center justify-center">
-                <Gift className="w-12 h-12 text-muted-foreground/30" />
-              </div>
-            )}
-            <CardContent className="p-4 space-y-2">
-              <h3 className="font-serif font-medium text-foreground text-lg line-clamp-2">
-                {name || "Sem título"}
-              </h3>
-              {description && (
-                <p className="text-sm text-muted-foreground line-clamp-3">{description}</p>
-              )}
-              {priceRange && (
-                <span className="inline-block text-sm bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
-                  {priceRange}
-                </span>
-              )}
-            </CardContent>
-          </Card>
-        )}
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="space-y-5">
+        {/* Name */}
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">
+            Nome do item <span className="text-destructive">*</span>
+          </label>
+          <Input
+            placeholder="Ex: Fone de ouvido Sony WH-1000XM5"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            maxLength={100}
+            className="h-11 rounded-xl"
+          />
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Nome *</label>
-            <Input placeholder="Nome do item" value={name} onChange={(e) => setName(e.target.value)} maxLength={100} />
+        {/* Priority */}
+        <div>
+          <label className="text-sm font-medium text-foreground mb-2 block">Prioridade</label>
+          <div className="grid grid-cols-3 gap-2">
+            {priorities.map((p) => {
+              const active = priority === p.value;
+              return (
+                <button
+                  key={p.value}
+                  type="button"
+                  onClick={() => setPriority(p.value)}
+                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-2 border text-sm font-medium transition-all ${
+                    active ? p.color + " border-current" : "border-border bg-card text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <p.icon className="w-3.5 h-3.5" />
+                  {p.label}
+                </button>
+              );
+            })}
           </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Descrição</label>
-            <Textarea placeholder="Descrição do item" value={description} onChange={(e) => setDescription(e.target.value)} maxLength={500} rows={3} />
+        </div>
+
+        {/* Type */}
+        <div>
+          <label className="text-sm font-medium text-foreground mb-2 block">Tipo</label>
+          <div className="grid grid-cols-2 gap-2">
+            {types.map((t) => {
+              const active = itemType === t.value;
+              return (
+                <button
+                  key={t.value}
+                  type="button"
+                  onClick={() => setItemType(t.value)}
+                  className={`flex flex-col items-center gap-1 rounded-xl py-3 px-3 border text-sm transition-all ${
+                    active
+                      ? "border-primary bg-primary/8 text-primary"
+                      : "border-border bg-card text-muted-foreground hover:bg-muted/50"
+                  }`}
+                >
+                  <t.icon className="w-5 h-5" />
+                  <span className="font-medium">{t.label}</span>
+                  <span className="text-[10px] opacity-70">{t.desc}</span>
+                </button>
+              );
+            })}
           </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">URL da imagem</label>
-            <Input placeholder="https://...imagem.jpg" value={imageUrl} onChange={(e) => setImageUrl(e.target.value)} maxLength={500} />
+        </div>
+
+        {/* Visibility */}
+        <div>
+          <label className="text-sm font-medium text-foreground mb-2 block">Visibilidade</label>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => setVisibility("private")}
+              className={`flex items-center gap-2 rounded-xl p-3 border text-sm font-medium transition-all ${
+                visibility === "private"
+                  ? "border-primary bg-primary/8 text-primary"
+                  : "border-border bg-card text-muted-foreground hover:bg-muted/50"
+              }`}
+            >
+              <Lock className="w-4 h-4" />
+              Privado
+            </button>
+            <button
+              type="button"
+              onClick={() => setVisibility("group")}
+              className={`flex items-center gap-2 rounded-xl p-3 border text-sm font-medium transition-all ${
+                visibility === "group"
+                  ? "border-primary bg-primary/8 text-primary"
+                  : "border-border bg-card text-muted-foreground hover:bg-muted/50"
+              }`}
+            >
+              <Users className="w-4 h-4" />
+              Grupos
+            </button>
           </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-1.5 block">Preço</label>
-            <Input placeholder="R$ 100 - 200" value={priceRange} onChange={(e) => setPriceRange(e.target.value)} maxLength={50} />
-          </div>
-          <div>
-            <label className="text-sm font-medium text-foreground mb-2 block">Visibilidade</label>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={() => setVisibility("private")}
-                className={`flex items-center gap-2 rounded-xl p-3 border text-sm font-medium transition-all ${
-                  visibility === "private"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground hover:border-primary/30"
-                }`}
-              >
-                <Lock className="w-4 h-4" />
-                Privado
-              </button>
-              <button
-                type="button"
-                onClick={() => setVisibility("group")}
-                className={`flex items-center gap-2 rounded-xl p-3 border text-sm font-medium transition-all ${
-                  visibility === "group"
-                    ? "border-primary bg-primary/10 text-primary"
-                    : "border-border text-muted-foreground hover:border-primary/30"
-                }`}
-              >
-                <Users className="w-4 h-4" />
-                Grupos
-              </button>
+        </div>
+
+        {/* Expandable Details */}
+        <button
+          type="button"
+          onClick={() => setShowDetails(!showDetails)}
+          className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors w-full"
+        >
+          {showDetails ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          {showDetails ? "Ocultar detalhes" : "Editar detalhes"}
+        </button>
+
+        {showDetails && (
+          <div className="space-y-4 animate-in fade-in slide-in-from-top-1 duration-200">
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Descrição</label>
+              <Textarea
+                placeholder="Detalhes do item..."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                maxLength={500}
+                rows={3}
+                className="rounded-xl resize-none"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">URL da imagem</label>
+              <Input
+                placeholder="https://...imagem.jpg"
+                value={imageUrl}
+                onChange={(e) => setImageUrl(e.target.value)}
+                maxLength={500}
+                className="h-11 rounded-xl"
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Faixa de preço</label>
+              <Input
+                placeholder="R$ 100 - 200"
+                value={priceRange}
+                onChange={(e) => setPriceRange(e.target.value)}
+                maxLength={50}
+                className="h-11 rounded-xl"
+              />
             </div>
           </div>
-          <Button type="submit" className="w-full rounded-xl gap-2" disabled={saveMutation.isPending}>
-            <Save className="w-4 h-4" />
-            {saveMutation.isPending ? "Salvando..." : "Salvar Item"}
-          </Button>
-        </form>
-      </div>
+        )}
+
+        {/* Submit */}
+        <Button
+          type="submit"
+          className="w-full h-12 rounded-xl gap-2 text-base font-medium shadow-[var(--shadow-soft)] hover:shadow-[var(--shadow-medium)] transition-shadow"
+          disabled={saveMutation.isPending}
+        >
+          {saveMutation.isPending ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" />
+              Salvando...
+            </>
+          ) : (
+            <>
+              <Save className="w-4 h-4" />
+              Salvar Item
+            </>
+          )}
+        </Button>
+      </form>
     </div>
   );
 };
