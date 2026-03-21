@@ -13,6 +13,7 @@ import AddItem from "./pages/AddItem";
 import MeusDesejos from "./pages/MeusDesejos";
 import Categorias from "./pages/Categorias";
 import Grupos from "./pages/Grupos";
+import GroupDetail from "./pages/GroupDetail";
 import Perfil from "./pages/Perfil";
 import NotFound from "./pages/NotFound";
 
