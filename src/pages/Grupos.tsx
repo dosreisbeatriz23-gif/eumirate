@@ -153,7 +153,8 @@ const Grupos = () => {
             return (
               <div
                 key={group.id}
-                className="flex items-center gap-4 rounded-2xl p-4 bg-card border border-border/50 transition-all hover:border-primary/20"
+                className="flex items-center gap-4 rounded-2xl p-4 bg-card border border-border/50 transition-all hover:border-primary/20 cursor-pointer"
+                onClick={() => navigate(`/grupo/${group.id}`)}
               >
                 <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
                   <Users className="w-5 h-5 text-primary" />
@@ -183,7 +184,7 @@ const Grupos = () => {
                   variant="ghost"
                   size="icon"
                   className="shrink-0 h-9 w-9 rounded-xl"
-                  onClick={() => copyInviteLink(group.invite_code, group.id)}
+                  onClick={(e) => { e.stopPropagation(); copyInviteLink(group.invite_code, group.id); }}
                 >
                   {copiedId === group.id ? (
                     <Check className="w-4 h-4 text-primary" />

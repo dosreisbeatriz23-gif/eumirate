@@ -13,6 +13,7 @@ import AddItem from "./pages/AddItem";
 import MeusDesejos from "./pages/MeusDesejos";
 import Categorias from "./pages/Categorias";
 import Grupos from "./pages/Grupos";
+import GroupDetail from "./pages/GroupDetail";
 import Perfil from "./pages/Perfil";
 import NotFound from "./pages/NotFound";
 
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/meus-desejos" element={<MeusDesejos />} />
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/grupos" element={<Grupos />} />
+            <Route path="/grupo/:id" element={<GroupDetail />} />
             <Route path="/perfil" element={<Perfil />} />
           </Route>
 
