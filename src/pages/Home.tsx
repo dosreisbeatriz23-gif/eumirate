@@ -31,20 +31,20 @@ const Home = () => {
   });
 
   return (
-    <div className="container mx-auto px-3 md:px-6 py-6 max-w-5xl">
+    <div className="container mx-auto px-4 md:px-8 py-8 md:py-12 max-w-6xl">
       {/* Header */}
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-end justify-between mb-10">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-serif font-medium text-foreground tracking-wide uppercase">
-            MURAL DE INSPIRAÇÃO
+          <h1 className="text-3xl sm:text-4xl font-serif text-foreground tracking-tight">
+            Mural de Inspiração
           </h1>
-          <p className="text-sm sm:text-base font-medium text-muted-foreground tracking-widest uppercase mt-0.5">
+          <p className="text-sm font-medium text-muted-foreground tracking-widest uppercase mt-1.5">
             MEUS DESEJOS
           </p>
         </div>
         <Button
           onClick={() => navigate("/adicionar")}
-          className="rounded-full gap-2 shadow-md"
+          className="rounded-full gap-2.5 h-11 px-6 shadow-card hover:shadow-medium transition-shadow duration-300 text-[13px] font-medium"
         >
           <PlusCircle className="w-4 h-4" />
           Adicionar Item
@@ -53,62 +53,65 @@ const Home = () => {
 
       {/* Pinterest Grid */}
       {isLoading ? (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
           {Array.from({ length: 8 }).map((_, i) => (
             <div
               key={i}
-              className="rounded-xl bg-muted animate-pulse"
-              style={{ height: `${140 + Math.random() * 80}px` }}
+              className="rounded-2xl bg-muted/50 animate-pulse"
+              style={{ height: `${160 + Math.random() * 60}px`, animationDelay: `${i * 0.1}s` }}
             />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-muted flex items-center justify-center mb-4">
-            <ImageOff className="w-7 h-7 text-muted-foreground" />
+        <div className="flex flex-col items-center justify-center py-28 text-center">
+          <div className="w-20 h-20 rounded-3xl bg-muted/50 flex items-center justify-center mb-5">
+            <ImageOff className="w-8 h-8 text-muted-foreground/40" />
           </div>
-          <h3 className="text-base font-medium text-foreground mb-1">
+          <h3 className="text-lg font-serif text-foreground mb-1.5">
             Seu mural está vazio
           </h3>
-          <p className="text-sm text-muted-foreground mb-6 max-w-xs">
+          <p className="text-sm text-muted-foreground mb-8 max-w-xs leading-relaxed">
             Adicione itens às suas listas para vê-los aqui como inspiração
           </p>
           <Button
             onClick={() => navigate("/adicionar")}
             variant="outline"
-            className="rounded-full gap-2"
+            className="rounded-full gap-2.5 h-11 px-6 border-border/60 hover:bg-muted/50 transition-all"
           >
             <PlusCircle className="w-4 h-4" />
             Adicionar primeiro item
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
-          {items.map((item) => (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
+          {items.map((item, index) => (
             <button
               key={item.id}
               onClick={() => navigate(`/item/${item.id}`)}
-              className="group flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm transition-all hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
+              className="group flex flex-col rounded-2xl overflow-hidden bg-card border border-border/20 shadow-soft transition-all duration-500 hover:shadow-medium hover:border-border/40 active:scale-[0.98]"
+              style={{ animationDelay: `${index * 0.05}s` }}
             >
               {item.image_url ? (
-                <div className="w-full aspect-square overflow-hidden bg-muted">
+                <div className="w-full aspect-square overflow-hidden bg-muted/30">
                   <img
                     src={item.image_url}
                     alt={item.name}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
                     loading="lazy"
                   />
                 </div>
               ) : (
-                <div className="w-full aspect-square flex items-center justify-center bg-muted/50">
-                  <span className="text-xs text-muted-foreground font-medium px-3 text-center leading-snug">
+                <div className="w-full aspect-square flex items-center justify-center bg-muted/20">
+                  <span className="text-xs text-muted-foreground/60 font-medium px-4 text-center leading-relaxed">
                     {item.name}
                   </span>
                 </div>
               )}
-              <p className="px-3 py-2 text-xs font-medium text-foreground truncate text-center">
-                {item.name}
-              </p>
+              <div className="px-3 py-3">
+                <p className="text-[13px] font-medium text-foreground/80 truncate text-center leading-tight">
+                  {item.name}
+                </p>
+              </div>
             </button>
           ))}
         </div>
