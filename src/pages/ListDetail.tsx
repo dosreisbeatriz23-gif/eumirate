@@ -304,7 +304,7 @@ const ListDetail = () => {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => deleteMutation.mutate(item.id)}
+                      onClick={() => setDeletingItemId(item.id)}
                       title="Remover"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
