@@ -274,54 +274,8 @@ const AddItem = () => {
           />
         </div>
 
-        {/* Priority */}
-        <div>
-          <label className="text-sm font-medium text-foreground mb-2 block">Prioridade</label>
-          <div className="grid grid-cols-3 gap-2">
-            {priorities.map((p) => {
-              const active = priority === p.value;
-              return (
-                <button
-                  key={p.value}
-                  type="button"
-                  onClick={() => setPriority(p.value)}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-2 border text-sm font-medium transition-all ${
-                    active ? p.color + " border-current" : "border-border bg-card text-muted-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  <p.icon className="w-3.5 h-3.5" />
-                  {p.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
-        {/* Type */}
-        <div>
-          <label className="text-sm font-medium text-foreground mb-2 block">Tipo</label>
-          <div className="grid grid-cols-2 gap-2">
-            {types.map((t) => {
-              const active = itemType === t.value;
-              return (
-                <button
-                  key={t.value}
-                  type="button"
-                  onClick={() => setItemType(t.value)}
-                  className={`flex flex-col items-center gap-1 rounded-xl py-3 px-3 border text-sm transition-all ${
-                    active
-                      ? "border-primary bg-primary/8 text-primary"
-                      : "border-border bg-card text-muted-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  <t.icon className="w-5 h-5" />
-                  <span className="font-medium">{t.label}</span>
-                  <span className="text-[10px] opacity-70">{t.desc}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+
 
         {/* Visibility */}
         <div>
