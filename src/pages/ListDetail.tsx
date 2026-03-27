@@ -26,8 +26,28 @@ import {
   Share2,
   Check,
   ArrowRightLeft,
+  Filter,
 } from "lucide-react";
 import { useState } from "react";
+
+const PRICE_FILTERS = [
+  { label: "Todos", min: 0, max: Infinity },
+  { label: "Até R$100", min: 0, max: 100 },
+  { label: "R$100–300", min: 100, max: 300 },
+  { label: "R$300–1.000", min: 300, max: 1000 },
+  { label: "R$1.000–3.000", min: 1000, max: 3000 },
+  { label: "R$3.000–5.000", min: 3000, max: 5000 },
+  { label: "Acima de R$5.000", min: 5000, max: Infinity },
+];
+
+function parsePriceRange(priceRange: string | null): number {
+  if (!priceRange) return 0;
+  const numbers = priceRange.replace(/[^\d.,]/g, " ").split(/\s+/).filter(Boolean);
+  if (numbers.length === 0) return 0;
+  const parsed = numbers.map((n) => parseFloat(n.replace(",", ".")));
+  if (parsed.length >= 2) return (parsed[0] + parsed[1]) / 2;
+  return parsed[0] || 0;
+}
 
 const ListDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -35,6 +55,7 @@ const ListDetail = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(0);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [movingItemId, setMovingItemId] = useState<string | null>(null);
   const [targetListId, setTargetListId] = useState("");
@@ -154,6 +175,32 @@ const ListDetail = () => {
           </div>
         </div>
 
+        {/* Price Filters */}
+        {items.length > 0 && (
+          <div className="space-y-2 mb-6">
+            <div className="flex items-center gap-2 text-sm font-medium text-foreground">
+              <Filter className="w-4 h-4 text-muted-foreground" />
+              Filtrar por valor
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {PRICE_FILTERS.map((f, i) => (
+                <button
+                  key={f.label}
+                  onClick={() => setActiveFilter(i)}
+                  className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-all
+                    ${
+                      activeFilter === i
+                        ? "bg-primary text-primary-foreground border-primary shadow-sm"
+                        : "bg-card text-muted-foreground border-border hover:border-primary/30 hover:text-foreground"
+                    }`}
+                >
+                  {f.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             {[1, 2, 3].map((i) => (
@@ -167,9 +214,24 @@ const ListDetail = () => {
               Lista vazia. Adicione seu primeiro item!
             </p>
           </div>
-        ) : (
+        ) : (() => {
+          const filter = PRICE_FILTERS[activeFilter];
+          const filteredItems = items.filter((item) => {
+            if (activeFilter === 0) return true;
+            const price = parsePriceRange(item.price_range);
+            return price >= filter.min && price < filter.max;
+          });
+          return filteredItems.length === 0 ? (
+            <div className="text-center py-16">
+              <Gift className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+              <p className="text-muted-foreground text-sm">Nenhum item nesta faixa de valor</p>
+              <Button variant="ghost" size="sm" className="mt-2 text-primary" onClick={() => setActiveFilter(0)}>
+                Limpar filtro
+              </Button>
+            </div>
+          ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {items.map((item) => (
+            {filteredItems.map((item) => (
               <Card
                 key={item.id}
                 className="group rounded-2xl overflow-hidden hover-lift border-border/50 relative"
@@ -241,7 +303,8 @@ const ListDetail = () => {
               </Card>
             ))}
           </div>
-        )}
+          );
+        })()}
       </div>
 
       <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
