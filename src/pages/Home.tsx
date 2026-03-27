@@ -24,16 +24,10 @@ const Home = () => {
               .eq("user_id", userId)
           ).data?.map((w) => w.id) ?? []
         )
-        .order("created_at", { ascending: false });
+        .order("created_at", { ascending: true });
       if (error) throw error;
       return data;
     },
-  });
-
-  // Split items into 4 columns for masonry effect
-  const columns: typeof items[] = [[], [], [], []];
-  items.forEach((item, i) => {
-    columns[i % 4].push(item);
   });
 
   return (
@@ -91,38 +85,30 @@ const Home = () => {
         </div>
       ) : (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
-          {columns.map((col, colIdx) => (
-            <div key={colIdx} className="flex flex-col gap-2 sm:gap-3">
-              {col.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => navigate(`/item/${item.id}`)}
-                  className="group relative rounded-xl overflow-hidden bg-muted border border-border/30 transition-all hover:shadow-[var(--shadow-medium)] hover:scale-[1.02] active:scale-[0.98]"
-                >
-                  {item.image_url ? (
-                    <img
-                      src={item.image_url}
-                      alt={item.name}
-                      className="w-full object-cover"
-                      loading="lazy"
-                      style={{
-                        minHeight: "120px",
-                        maxHeight: "280px",
-                      }}
-                    />
-                  ) : (
-                    <div className="w-full flex items-center justify-center bg-accent/40 py-10">
-                      <span className="text-xs text-accent-foreground font-medium px-3 text-center leading-snug">
-                        {item.name}
-                      </span>
-                    </div>
-                  )}
-                  <p className="px-2 py-1.5 text-[11px] font-medium text-foreground truncate">
+          {items.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => navigate(`/item/${item.id}`)}
+              className="group relative rounded-xl overflow-hidden bg-muted border border-border/30 transition-all hover:shadow-[var(--shadow-medium)] hover:scale-[1.02] active:scale-[0.98]"
+            >
+              {item.image_url ? (
+                <img
+                  src={item.image_url}
+                  alt={item.name}
+                  className="w-full aspect-square object-cover"
+                  loading="lazy"
+                />
+              ) : (
+                <div className="w-full aspect-square flex items-center justify-center bg-accent/40">
+                  <span className="text-xs text-accent-foreground font-medium px-3 text-center leading-snug">
                     {item.name}
-                  </p>
-                </button>
-              ))}
-            </div>
+                  </span>
+                </div>
+              )}
+              <p className="px-2 py-1.5 text-[11px] font-medium text-foreground truncate">
+                {item.name}
+              </p>
+            </button>
           ))}
         </div>
       )}
