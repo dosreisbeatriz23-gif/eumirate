@@ -14,13 +14,8 @@ import {
   Save,
   Lock,
   Users,
-  ShoppingBag,
-  Sparkles,
   ChevronDown,
   ChevronUp,
-  Star,
-  ArrowUp,
-  ArrowDown,
   Check,
 } from "lucide-react";
 
@@ -40,16 +35,6 @@ const isValidUrl = (str: string) => {
   }
 };
 
-const priorities = [
-  { value: "alta", label: "Alta", icon: ArrowUp, color: "text-red-500 bg-red-50 border-red-200" },
-  { value: "média", label: "Média", icon: Star, color: "text-amber-500 bg-amber-50 border-amber-200" },
-  { value: "baixa", label: "Baixa", icon: ArrowDown, color: "text-emerald-500 bg-emerald-50 border-emerald-200" },
-];
-
-const types = [
-  { value: "produto", label: "Produto", icon: ShoppingBag, desc: "Item físico ou digital" },
-  { value: "experiência", label: "Experiência", icon: Sparkles, desc: "Viagem, evento, etc." },
-];
 
 const AddItem = () => {
   const { id: paramListId } = useParams<{ id: string }>();
