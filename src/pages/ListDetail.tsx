@@ -55,6 +55,7 @@ const ListDetail = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [copied, setCopied] = useState(false);
+  const [activeFilter, setActiveFilter] = useState(0);
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [movingItemId, setMovingItemId] = useState<string | null>(null);
   const [targetListId, setTargetListId] = useState("");
