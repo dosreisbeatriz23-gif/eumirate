@@ -16,6 +16,7 @@ import Grupos from "./pages/Grupos";
 import GroupDetail from "./pages/GroupDetail";
 import Perfil from "./pages/Perfil";
 import ItemDetail from "./pages/ItemDetail";
+import GroupInvite from "./pages/GroupInvite";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -42,6 +43,7 @@ const App = () => (
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/grupos" element={<Grupos />} />
             <Route path="/grupo/:id" element={<GroupDetail />} />
+            <Route path="/grupo/convite/:code" element={<GroupInvite />} />
             <Route path="/item/:id" element={<ItemDetail />} />
             <Route path="/perfil" element={<Perfil />} />
           </Route>
