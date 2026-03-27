@@ -1,12 +1,40 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Lock, Users, Gift } from "lucide-react";
+import { ArrowLeft, ExternalLink, Lock, Users, Gift, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
+import { useState } from "react";
 
 const ItemDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [showDelete, setShowDelete] = useState(false);
+
+  const deleteMutation = useMutation({
+    mutationFn: async () => {
+      const { error } = await supabase.from("wishlist_items").delete().eq("id", id!);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["wishlist-items"] });
+      queryClient.invalidateQueries({ queryKey: ["all-items"] });
+      toast.success("Item removido");
+      navigate(-1);
+    },
+    onError: () => toast.error("Erro ao remover item"),
+  });
 
   const { data: item, isLoading } = useQuery({
     queryKey: ["item-detail", id],
@@ -124,7 +152,36 @@ const ItemDetail = () => {
             </Button>
           </a>
         )}
+
+        <Button
+          variant="outline"
+          className="w-full h-12 rounded-xl gap-2 text-base font-medium text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+          onClick={() => setShowDelete(true)}
+        >
+          <Trash2 className="w-4 h-4" />
+          Remover item
+        </Button>
       </div>
+
+      <AlertDialog open={showDelete} onOpenChange={setShowDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-serif">Remover item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover este item? Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteMutation.mutate()}
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
