@@ -1,0 +1,1 @@
+ALTER TABLE public.wishlists ADD COLUMN IF NOT EXISTS visibility text NOT NULL DEFAULT 'private';
