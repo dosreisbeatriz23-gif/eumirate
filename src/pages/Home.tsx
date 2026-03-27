@@ -84,28 +84,30 @@ const Home = () => {
           </Button>
         </div>
       ) : (
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4">
           {items.map((item) => (
             <button
               key={item.id}
               onClick={() => navigate(`/item/${item.id}`)}
-              className="group relative rounded-xl overflow-hidden bg-muted border border-border/30 transition-all hover:shadow-[var(--shadow-medium)] hover:scale-[1.02] active:scale-[0.98]"
+              className="group flex flex-col rounded-2xl overflow-hidden bg-card border border-border/40 shadow-sm transition-all hover:shadow-md hover:scale-[1.02] active:scale-[0.98]"
             >
               {item.image_url ? (
-                <img
-                  src={item.image_url}
-                  alt={item.name}
-                  className="w-full aspect-square object-cover"
-                  loading="lazy"
-                />
+                <div className="w-full aspect-square overflow-hidden bg-muted">
+                  <img
+                    src={item.image_url}
+                    alt={item.name}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                    loading="lazy"
+                  />
+                </div>
               ) : (
-                <div className="w-full aspect-square flex items-center justify-center bg-accent/40">
-                  <span className="text-xs text-accent-foreground font-medium px-3 text-center leading-snug">
+                <div className="w-full aspect-square flex items-center justify-center bg-muted/50">
+                  <span className="text-xs text-muted-foreground font-medium px-3 text-center leading-snug">
                     {item.name}
                   </span>
                 </div>
               )}
-              <p className="px-2 py-1.5 text-[11px] font-medium text-foreground truncate">
+              <p className="px-3 py-2 text-xs font-medium text-foreground truncate text-center">
                 {item.name}
               </p>
             </button>
