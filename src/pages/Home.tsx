@@ -45,8 +45,8 @@ const Home = () => {
             <Sparkles className="w-4 h-4 text-primary" />
             <span className="text-xs font-medium text-primary">Mural de Inspiração</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-serif font-medium text-foreground">
-            Meus Desejos
+          <h1 className="text-2xl sm:text-3xl font-serif font-medium text-foreground tracking-wide">
+            MURAL DE INSPIRAÇÃO
           </h1>
         </div>
         <Button
@@ -54,8 +54,7 @@ const Home = () => {
           className="rounded-full gap-2 shadow-md"
         >
           <PlusCircle className="w-4 h-4" />
-          <span className="hidden sm:inline">Adicionar Item</span>
-          <span className="sm:hidden">Adicionar</span>
+          Adicionar Item
         </Button>
       </div>
 
@@ -118,6 +117,9 @@ const Home = () => {
                       </span>
                     </div>
                   )}
+                  <p className="px-2 py-1.5 text-[11px] font-medium text-foreground truncate">
+                    {item.name}
+                  </p>
                 </button>
               ))}
             </div>
