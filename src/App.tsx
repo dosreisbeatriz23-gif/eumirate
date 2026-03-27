@@ -42,6 +42,7 @@ const App = () => (
             <Route path="/categorias" element={<Categorias />} />
             <Route path="/grupos" element={<Grupos />} />
             <Route path="/grupo/:id" element={<GroupDetail />} />
+            <Route path="/item/:id" element={<ItemDetail />} />
             <Route path="/perfil" element={<Perfil />} />
           </Route>
 
