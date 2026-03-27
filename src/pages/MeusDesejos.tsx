@@ -10,6 +10,16 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import {
@@ -28,6 +38,7 @@ const MeusDesejos = () => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [createOpen, setCreateOpen] = useState(false);
+  const [deletingListId, setDeletingListId] = useState<string | null>(null);
   const [createVisibility, setCreateVisibility] = useState<"private" | "public">("private");
   const [newTitle, setNewTitle] = useState("");
 
@@ -134,7 +145,7 @@ const MeusDesejos = () => {
             variant="ghost"
             size="icon"
             className="h-7 w-7 shrink-0 text-destructive hover:text-destructive opacity-0 group-hover:opacity-100 transition-opacity"
-            onClick={(e) => { e.stopPropagation(); deleteMutation.mutate(list.id); }}
+            onClick={(e) => { e.stopPropagation(); setDeletingListId(list.id); }}
           >
             <Trash2 className="w-3.5 h-3.5" />
           </Button>

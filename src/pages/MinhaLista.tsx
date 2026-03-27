@@ -14,6 +14,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -53,6 +63,7 @@ const MinhaLista = () => {
   const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
   const [form, setForm] = useState(emptyForm);
   const [shareUrl, setShareUrl] = useState("");
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
 
   // Fetch wishlist
@@ -399,7 +410,7 @@ const MinhaLista = () => {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => deleteMutation.mutate(item.id)}
+                      onClick={() => setDeletingItemId(item.id)}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>
@@ -410,6 +421,29 @@ const MinhaLista = () => {
           </div>
         )}
       </div>
+
+      <AlertDialog open={!!deletingItemId} onOpenChange={(open) => !open && setDeletingItemId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-serif">Remover item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover este item? Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deletingItemId) deleteMutation.mutate(deletingItemId);
+                setDeletingItemId(null);
+              }}
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </main>
   );
 };
