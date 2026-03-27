@@ -160,7 +160,7 @@ const AddItem = () => {
       image_url: imageUrl.trim() || null,
       price_range: priceRange.trim() || null,
       description: description.trim() || null,
-      priority,
+      
       visibility,
     });
     if (error) throw error;
