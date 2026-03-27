@@ -13,6 +13,7 @@ import {
   Copy,
   Check,
   Filter,
+  UserPlus,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -149,6 +150,28 @@ const GroupDetail = () => {
         <span>{memberIds.length} {memberIds.length === 1 ? "membro" : "membros"}</span>
         <span className="text-muted-foreground/40">·</span>
         <span>{items.length} {items.length === 1 ? "presente" : "presentes"} compartilhados</span>
+      </div>
+
+      {/* How to invite guide */}
+      <div className="rounded-2xl border border-border/50 bg-card p-4 space-y-3">
+        <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+          <UserPlus className="w-4 h-4 text-primary" />
+          Como adicionar integrantes
+        </h3>
+        <div className="space-y-2">
+          <div className="flex items-start gap-3">
+            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
+            <p className="text-xs text-muted-foreground">Clique em <strong className="text-foreground">"Convidar"</strong> acima para copiar o link de convite do grupo.</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
+            <p className="text-xs text-muted-foreground">Envie o link por <strong className="text-foreground">WhatsApp, e-mail ou qualquer mensageiro</strong> para quem quiser convidar.</p>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
+            <p className="text-xs text-muted-foreground">Ao abrir o link, a pessoa entra automaticamente no grupo e pode ver as listas dos membros.</p>
+          </div>
+        </div>
       </div>
 
       {/* Price Filters */}
