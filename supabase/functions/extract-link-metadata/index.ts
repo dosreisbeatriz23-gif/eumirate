@@ -21,7 +21,7 @@ Deno.serve(async (req) => {
     console.log('Extracting metadata from:', url);
 
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10000);
+    const timeout = setTimeout(() => controller.abort(), 15000);
 
     let html: string;
     try {
@@ -44,9 +44,8 @@ Deno.serve(async (req) => {
       clearTimeout(timeout);
 
       if (!response.ok) {
-        // If site blocks us, return partial data with just the URL instead of failing
         console.warn(`Site returned ${response.status}, returning partial data`);
-        await response.text(); // consume body
+        await response.text();
         return new Response(
           JSON.stringify({
             success: true,
@@ -59,7 +58,6 @@ Deno.serve(async (req) => {
       html = await response.text();
     } catch (fetchErr) {
       clearTimeout(timeout);
-      // On timeout or network error, return partial data
       console.warn('Fetch failed, returning partial data:', fetchErr);
       return new Response(
         JSON.stringify({
@@ -71,16 +69,12 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Helper to decode HTML entities
     const decodeEntities = (str: string) =>
-      str.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#x27;/g, "'");
+      str.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&#x27;/g, "'").replace(/&#x2F;/g, '/');
 
-    // Extract with multiple fallback patterns (handle both content="x" and content='x' and reversed attr order)
     const extractMeta = (property: string, name?: string): string | null => {
       const patterns = [
-        // property="og:xxx" content="value"
         new RegExp(`<meta[^>]*property=["']${property}["'][^>]*content=["']([^"']+)["']`, 'i'),
-        // content="value" property="og:xxx"
         new RegExp(`<meta[^>]*content=["']([^"']+)["'][^>]*property=["']${property}["']`, 'i'),
       ];
       if (name) {
@@ -106,16 +100,72 @@ Deno.serve(async (req) => {
     // Description
     const description = extractMeta('og:description', 'description');
 
-    // Image
+    // Image - enhanced extraction with multiple fallbacks
     let image = extractMeta('og:image', 'image');
+    
     if (!image) {
-      // Try twitter:image
       image = extractMeta('twitter:image');
     }
     if (!image) {
-      // Try first product image or large image in page
-      const imgMatch = html.match(/<img[^>]*src=["']([^"']+(?:\.(?:jpg|jpeg|png|webp))[^"']*)["'][^>]*>/i);
-      if (imgMatch?.[1]) image = imgMatch[1];
+      image = extractMeta('twitter:image:src');
+    }
+
+    // Try itemprop="image" (used by many e-commerce sites)
+    if (!image) {
+      const itempropImg = html.match(/<(?:img|meta)[^>]*itemprop=["']image["'][^>]*(?:content|src)=["']([^"']+)["']/i)
+        || html.match(/<(?:img|meta)[^>]*(?:content|src)=["']([^"']+)["'][^>]*itemprop=["']image["']/i);
+      if (itempropImg?.[1]) image = itempropImg[1];
+    }
+
+    // Try JSON-LD for image
+    if (!image) {
+      const jsonLdMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+      if (jsonLdMatch) {
+        for (const block of jsonLdMatch) {
+          const jsonStr = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
+          try {
+            const ld = JSON.parse(jsonStr);
+            // Handle @graph structure
+            const items = ld['@graph'] || [ld];
+            for (const item of (Array.isArray(items) ? items : [items])) {
+              if (item.image) {
+                const img = Array.isArray(item.image) ? item.image[0] : item.image;
+                if (typeof img === 'string') { image = img; break; }
+                if (img?.url) { image = img.url; break; }
+                if (img?.contentUrl) { image = img.contentUrl; break; }
+              }
+            }
+            if (image) break;
+          } catch { /* ignore */ }
+        }
+      }
+    }
+
+    // Shein-specific: look for data-src in gallery images
+    if (!image) {
+      const dataSrcMatch = html.match(/<img[^>]*(?:class=["'][^"']*(?:product|gallery|goods)[^"']*["'][^>]*)?data-src=["']([^"']+(?:\.(?:jpg|jpeg|png|webp))[^"']*)["']/i);
+      if (dataSrcMatch?.[1]) image = dataSrcMatch[1];
+    }
+
+    // Mercado Livre specific: look for figure/img patterns
+    if (!image) {
+      const mlMatch = html.match(/<figure[^>]*>[\s\S]*?<img[^>]*src=["']([^"']+(?:\.(?:jpg|jpeg|png|webp))[^"']*)["']/i);
+      if (mlMatch?.[1]) image = mlMatch[1];
+    }
+
+    // Generic: first large product-like image
+    if (!image) {
+      const imgMatches = html.matchAll(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi);
+      for (const match of imgMatches) {
+        const src = match[1];
+        if (!src) continue;
+        // Skip tiny images, icons, tracking pixels, svgs, base64
+        if (src.includes('data:') || src.includes('.svg') || src.includes('pixel') || src.includes('tracking') || src.includes('spacer') || src.includes('logo') || src.includes('icon') || src.length < 20) continue;
+        if (/\.(jpg|jpeg|png|webp)/i.test(src)) {
+          image = src;
+          break;
+        }
+      }
     }
 
     // Make relative URLs absolute
@@ -126,23 +176,31 @@ Deno.serve(async (req) => {
       } catch { /* ignore */ }
     }
 
+    // Clean up protocol-relative URLs
+    if (image && image.startsWith('//')) {
+      image = 'https:' + image;
+    }
+
     // Price
     let price = extractMeta('product:price:amount');
     if (!price) price = extractMeta('og:price:amount');
     if (!price) {
-      // Try JSON-LD
       const jsonLdMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
       if (jsonLdMatch) {
         for (const block of jsonLdMatch) {
           const jsonStr = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
           try {
             const ld = JSON.parse(jsonStr);
-            const offer = ld.offers || ld.Offers;
-            if (offer) {
-              const p = Array.isArray(offer) ? offer[0]?.price : offer.price;
-              if (p) { price = String(p); break; }
+            const items = ld['@graph'] || [ld];
+            for (const item of (Array.isArray(items) ? items : [items])) {
+              const offer = item.offers || item.Offers;
+              if (offer) {
+                const p = Array.isArray(offer) ? offer[0]?.price : offer.price;
+                if (p) { price = String(p); break; }
+              }
+              if (item.price) { price = String(item.price); break; }
             }
-            if (ld.price) { price = String(ld.price); break; }
+            if (price) break;
           } catch { /* ignore */ }
         }
       }
