@@ -99,8 +99,6 @@ const AddItem = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [priceRange, setPriceRange] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("média");
-  const [itemType, setItemType] = useState("produto");
   const [visibility, setVisibility] = useState<"private" | "group">("private");
   const [showDetails, setShowDetails] = useState(false);
 
@@ -118,9 +116,10 @@ const AddItem = () => {
       if (data?.success && data.data) {
         const d = data.data as ExtractedMeta & { url: string };
         setMeta(d);
-        setName(d.title ?? "");
+        const shortName = (d.title ?? "").split(/\s+/).slice(0, 4).join(" ");
+        setName(shortName);
         setImageUrl(d.image ?? "");
-        setDescription(d.description ?? "");
+        setDescription("");
         setPriceRange(d.price ? `R$ ${d.price}` : "");
         setExtracted(true);
         toast.success("Dados extraídos automaticamente!");
