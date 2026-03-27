@@ -26,8 +26,28 @@ import {
   Share2,
   Check,
   ArrowRightLeft,
+  Filter,
 } from "lucide-react";
 import { useState } from "react";
+
+const PRICE_FILTERS = [
+  { label: "Todos", min: 0, max: Infinity },
+  { label: "Até R$100", min: 0, max: 100 },
+  { label: "R$100–300", min: 100, max: 300 },
+  { label: "R$300–1.000", min: 300, max: 1000 },
+  { label: "R$1.000–3.000", min: 1000, max: 3000 },
+  { label: "R$3.000–5.000", min: 3000, max: 5000 },
+  { label: "Acima de R$5.000", min: 5000, max: Infinity },
+];
+
+function parsePriceRange(priceRange: string | null): number {
+  if (!priceRange) return 0;
+  const numbers = priceRange.replace(/[^\d.,]/g, " ").split(/\s+/).filter(Boolean);
+  if (numbers.length === 0) return 0;
+  const parsed = numbers.map((n) => parseFloat(n.replace(",", ".")));
+  if (parsed.length >= 2) return (parsed[0] + parsed[1]) / 2;
+  return parsed[0] || 0;
+}
 
 const ListDetail = () => {
   const { id } = useParams<{ id: string }>();
