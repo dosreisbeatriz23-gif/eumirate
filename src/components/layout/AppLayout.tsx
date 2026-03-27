@@ -98,7 +98,7 @@ const AppLayout = () => {
                 )}
               >
                 {isAdd ? (
-                  <span className="flex items-center justify-center w-[52px] h-[52px] rounded-2xl bg-foreground text-background shadow-elevated">
+                  <span className="flex items-center justify-center w-[52px] h-[52px] rounded-2xl bg-primary text-primary-foreground shadow-elevated">
                     <tab.icon className="w-5 h-5" strokeWidth={2} />
                   </span>
                 ) : (
