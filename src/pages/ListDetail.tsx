@@ -303,7 +303,8 @@ const ListDetail = () => {
               </Card>
             ))}
           </div>
-        )}
+          );
+        })()}
       </div>
 
       <Dialog open={moveDialogOpen} onOpenChange={setMoveDialogOpen}>
