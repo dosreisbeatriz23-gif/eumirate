@@ -35,13 +35,12 @@ const Home = () => {
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <div className="flex items-center gap-1.5 mb-0.5">
-            <Sparkles className="w-4 h-4 text-primary" />
-            <span className="text-xs font-medium text-primary">Mural de Inspiração</span>
-          </div>
-          <h1 className="text-2xl sm:text-3xl font-serif font-medium text-foreground tracking-wide">
+          <h1 className="text-2xl sm:text-3xl font-serif font-medium text-foreground tracking-wide uppercase">
             MURAL DE INSPIRAÇÃO
           </h1>
+          <p className="text-sm sm:text-base font-medium text-muted-foreground tracking-widest uppercase mt-0.5">
+            MEUS DESEJOS
+          </p>
         </div>
         <Button
           onClick={() => navigate("/adicionar")}
