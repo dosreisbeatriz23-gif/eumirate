@@ -259,6 +259,29 @@ const MeusDesejos = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deletingListId} onOpenChange={(open) => !open && setDeletingListId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-serif">Remover lista</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover esta lista e todos os seus itens? Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deletingListId) deleteMutation.mutate(deletingListId);
+                setDeletingListId(null);
+              }}
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
