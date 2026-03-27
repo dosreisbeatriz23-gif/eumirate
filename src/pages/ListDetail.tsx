@@ -5,6 +5,16 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Dialog,
   DialogContent,
   DialogHeader,
@@ -59,6 +69,7 @@ const ListDetail = () => {
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [movingItemId, setMovingItemId] = useState<string | null>(null);
   const [targetListId, setTargetListId] = useState("");
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
   const { data: wishlist } = useQuery({
     queryKey: ["wishlist", id],
@@ -293,7 +304,7 @@ const ListDetail = () => {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => deleteMutation.mutate(item.id)}
+                      onClick={() => setDeletingItemId(item.id)}
                       title="Remover"
                     >
                       <Trash2 className="w-3.5 h-3.5" />
@@ -339,6 +350,29 @@ const ListDetail = () => {
           </div>
         </DialogContent>
       </Dialog>
+
+      <AlertDialog open={!!deletingItemId} onOpenChange={(open) => !open && setDeletingItemId(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-serif">Remover item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover este item? Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => {
+                if (deletingItemId) deleteMutation.mutate(deletingItemId);
+                setDeletingItemId(null);
+              }}
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
