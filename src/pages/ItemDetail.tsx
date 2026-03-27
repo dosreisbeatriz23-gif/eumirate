@@ -152,7 +152,36 @@ const ItemDetail = () => {
             </Button>
           </a>
         )}
+
+        <Button
+          variant="outline"
+          className="w-full h-12 rounded-xl gap-2 text-base font-medium text-destructive border-destructive/30 hover:bg-destructive/10 hover:text-destructive"
+          onClick={() => setShowDelete(true)}
+        >
+          <Trash2 className="w-4 h-4" />
+          Remover item
+        </Button>
       </div>
+
+      <AlertDialog open={showDelete} onOpenChange={setShowDelete}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-serif">Remover item</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja remover este item? Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => deleteMutation.mutate()}
+            >
+              Remover
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
