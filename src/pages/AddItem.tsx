@@ -14,13 +14,8 @@ import {
   Save,
   Lock,
   Users,
-  ShoppingBag,
-  Sparkles,
   ChevronDown,
   ChevronUp,
-  Star,
-  ArrowUp,
-  ArrowDown,
   Check,
 } from "lucide-react";
 
@@ -40,16 +35,6 @@ const isValidUrl = (str: string) => {
   }
 };
 
-const priorities = [
-  { value: "alta", label: "Alta", icon: ArrowUp, color: "text-red-500 bg-red-50 border-red-200" },
-  { value: "média", label: "Média", icon: Star, color: "text-amber-500 bg-amber-50 border-amber-200" },
-  { value: "baixa", label: "Baixa", icon: ArrowDown, color: "text-emerald-500 bg-emerald-50 border-emerald-200" },
-];
-
-const types = [
-  { value: "produto", label: "Produto", icon: ShoppingBag, desc: "Item físico ou digital" },
-  { value: "experiência", label: "Experiência", icon: Sparkles, desc: "Viagem, evento, etc." },
-];
 
 const AddItem = () => {
   const { id: paramListId } = useParams<{ id: string }>();
@@ -99,8 +84,6 @@ const AddItem = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [priceRange, setPriceRange] = useState("");
   const [description, setDescription] = useState("");
-  const [priority, setPriority] = useState("média");
-  const [itemType, setItemType] = useState("produto");
   const [visibility, setVisibility] = useState<"private" | "group">("private");
   const [showDetails, setShowDetails] = useState(false);
 
@@ -118,9 +101,10 @@ const AddItem = () => {
       if (data?.success && data.data) {
         const d = data.data as ExtractedMeta & { url: string };
         setMeta(d);
-        setName(d.title ?? "");
+        const shortName = (d.title ?? "").split(/\s+/).slice(0, 4).join(" ");
+        setName(shortName);
         setImageUrl(d.image ?? "");
-        setDescription(d.description ?? "");
+        setDescription("");
         setPriceRange(d.price ? `R$ ${d.price}` : "");
         setExtracted(true);
         toast.success("Dados extraídos automaticamente!");
@@ -161,7 +145,7 @@ const AddItem = () => {
       image_url: imageUrl.trim() || null,
       price_range: priceRange.trim() || null,
       description: description.trim() || null,
-      priority,
+      
       visibility,
     });
     if (error) throw error;
@@ -275,54 +259,8 @@ const AddItem = () => {
           />
         </div>
 
-        {/* Priority */}
-        <div>
-          <label className="text-sm font-medium text-foreground mb-2 block">Prioridade</label>
-          <div className="grid grid-cols-3 gap-2">
-            {priorities.map((p) => {
-              const active = priority === p.value;
-              return (
-                <button
-                  key={p.value}
-                  type="button"
-                  onClick={() => setPriority(p.value)}
-                  className={`flex items-center justify-center gap-1.5 rounded-xl py-2.5 px-2 border text-sm font-medium transition-all ${
-                    active ? p.color + " border-current" : "border-border bg-card text-muted-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  <p.icon className="w-3.5 h-3.5" />
-                  {p.label}
-                </button>
-              );
-            })}
-          </div>
-        </div>
 
-        {/* Type */}
-        <div>
-          <label className="text-sm font-medium text-foreground mb-2 block">Tipo</label>
-          <div className="grid grid-cols-2 gap-2">
-            {types.map((t) => {
-              const active = itemType === t.value;
-              return (
-                <button
-                  key={t.value}
-                  type="button"
-                  onClick={() => setItemType(t.value)}
-                  className={`flex flex-col items-center gap-1 rounded-xl py-3 px-3 border text-sm transition-all ${
-                    active
-                      ? "border-primary bg-primary/8 text-primary"
-                      : "border-border bg-card text-muted-foreground hover:bg-muted/50"
-                  }`}
-                >
-                  <t.icon className="w-5 h-5" />
-                  <span className="font-medium">{t.label}</span>
-                  <span className="text-[10px] opacity-70">{t.desc}</span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
+
 
         {/* Visibility */}
         <div>
