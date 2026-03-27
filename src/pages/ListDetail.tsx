@@ -69,6 +69,7 @@ const ListDetail = () => {
   const [moveDialogOpen, setMoveDialogOpen] = useState(false);
   const [movingItemId, setMovingItemId] = useState<string | null>(null);
   const [targetListId, setTargetListId] = useState("");
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
 
   const { data: wishlist } = useQuery({
     queryKey: ["wishlist", id],
