@@ -32,24 +32,24 @@ const AppLayout = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Desktop Header */}
-      <header className="hidden md:block border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-6 h-[60px] flex items-center justify-between">
+      <header className="hidden md:block bg-card/80 backdrop-blur-xl border-b border-border/40 sticky top-0 z-50">
+        <div className="container mx-auto px-8 h-16 flex items-center justify-between">
           <button
             onClick={() => navigate("/dashboard")}
-            className="text-xl font-serif font-medium"
+            className="text-xl font-serif tracking-tight text-foreground hover:opacity-70 transition-opacity"
           >
-            <span className="text-gradient">EUMIRATE</span>
+            EUMIRATE
           </button>
-          <nav className="flex items-center gap-1">
+          <nav className="flex items-center gap-0.5">
             {desktopLinks.map((link) => (
               <button
                 key={link.path}
                 onClick={() => navigate(link.path)}
                 className={cn(
-                  "px-4 py-2 rounded-lg text-sm font-medium transition-colors",
+                  "px-4 py-2 rounded-full text-[13px] font-medium tracking-wide transition-all duration-300",
                   isActive(location.pathname, link.path)
-                    ? "text-primary bg-primary/10"
-                    : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    ? "text-foreground bg-muted"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 {link.label}
@@ -59,26 +59,28 @@ const AppLayout = () => {
         </div>
       </header>
 
-      {/* Mobile Header (logo only) */}
-      <header className="md:hidden border-b border-border bg-card/50 backdrop-blur-sm sticky top-0 z-50">
-        <div className="container mx-auto px-4 h-[52px] flex items-center">
+      {/* Mobile Header */}
+      <header className="md:hidden bg-card/80 backdrop-blur-xl border-b border-border/40 sticky top-0 z-50">
+        <div className="px-5 h-14 flex items-center">
           <button
             onClick={() => navigate("/dashboard")}
-            className="text-lg font-serif font-medium"
+            className="text-lg font-serif tracking-tight text-foreground"
           >
-            <span className="text-gradient">EUMIRATE</span>
+            EUMIRATE
           </button>
         </div>
       </header>
 
       {/* Page Content */}
-      <main className="flex-1 pb-20 md:pb-0">
-        <Outlet />
+      <main className="flex-1 pb-24 md:pb-0">
+        <div className="page-enter">
+          <Outlet />
+        </div>
       </main>
 
       {/* Mobile Bottom Tab Bar */}
-      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card border-t border-border">
-        <div className="flex items-center justify-around h-16">
+      <nav className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-card/90 backdrop-blur-xl border-t border-border/30">
+        <div className="flex items-center justify-around h-[72px] px-2 pb-1">
           {mobileTabs.map((tab) => {
             const active = isActive(location.pathname, tab.path);
             const isAdd = tab.path === "/adicionar";
@@ -87,22 +89,24 @@ const AppLayout = () => {
                 key={tab.path}
                 onClick={() => navigate(tab.path)}
                 className={cn(
-                  "flex flex-col items-center justify-center gap-0.5 w-full h-full transition-colors",
+                  "flex flex-col items-center justify-center gap-1 w-full h-full transition-all duration-300",
                   isAdd
-                    ? "relative -mt-5"
+                    ? "relative -mt-6"
                     : active
-                      ? "text-primary"
-                      : "text-muted-foreground"
+                      ? "text-foreground"
+                      : "text-muted-foreground/60"
                 )}
               >
                 {isAdd ? (
-                  <span className="flex items-center justify-center w-12 h-12 rounded-full bg-primary text-primary-foreground shadow-lg">
-                    <tab.icon className="w-6 h-6" strokeWidth={2.5} />
+                  <span className="flex items-center justify-center w-[52px] h-[52px] rounded-2xl bg-foreground text-background shadow-elevated">
+                    <tab.icon className="w-5 h-5" strokeWidth={2} />
                   </span>
                 ) : (
                   <>
-                    <tab.icon className="w-5 h-5" strokeWidth={active ? 2.5 : 2} />
-                    <span className="text-[10px] font-medium">{tab.label}</span>
+                    <tab.icon className="w-[22px] h-[22px]" strokeWidth={active ? 2.2 : 1.8} />
+                    <span className={cn("text-[10px] tracking-wide", active ? "font-medium" : "font-normal")}>
+                      {tab.label}
+                    </span>
                   </>
                 )}
               </button>

@@ -7,27 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
+  Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  Users,
-  Heart,
-  Home,
-  Plus,
-  Copy,
-  Check,
-  Crown,
-  UserPlus,
-} from "lucide-react";
+import { Users, Heart, Home, Plus, Copy, Check, Crown, UserPlus } from "lucide-react";
 import { toast } from "sonner";
 
 const defaultSuggestions = [
-  { name: "Família", icon: Home, color: "bg-primary/10 text-primary border-primary/20" },
+  { name: "Família", icon: Home, color: "bg-primary/8 text-primary border-primary/15" },
   { name: "Amigos", icon: Users, color: "bg-secondary text-secondary-foreground border-secondary" },
-  { name: "Casal", icon: Heart, color: "bg-accent text-accent-foreground border-accent" },
+  { name: "Casal", icon: Heart, color: "bg-accent text-accent-foreground border-accent/50" },
 ];
 
 const Grupos = () => {
@@ -44,10 +32,7 @@ const Grupos = () => {
     queryKey: ["groups", userId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("groups")
-        .select("*, group_members(count)")
-        .eq("owner_id", userId)
-        .order("created_at", { ascending: false });
+        .from("groups").select("*, group_members(count)").eq("owner_id", userId).order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -56,33 +41,20 @@ const Grupos = () => {
   const createGroup = useMutation({
     mutationFn: async ({ name, description }: { name: string; description: string }) => {
       const { data, error } = await supabase
-        .from("groups")
-        .insert({ name, description: description || null, owner_id: userId })
-        .select()
-        .single();
+        .from("groups").insert({ name, description: description || null, owner_id: userId }).select().single();
       if (error) throw error;
-
-      // Add owner as member
-      await supabase
-        .from("group_members")
-        .insert({ group_id: data.id, user_id: userId, role: "owner" });
-
+      await supabase.from("group_members").insert({ group_id: data.id, user_id: userId, role: "owner" });
       return data;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["groups", userId] });
-      setShowCreate(false);
-      setName("");
-      setDescription("");
+      setShowCreate(false); setName(""); setDescription("");
       toast.success("Grupo criado com sucesso!");
     },
     onError: () => toast.error("Erro ao criar grupo"),
   });
 
-  const handleQuickCreate = (groupName: string) => {
-    setName(groupName);
-    setShowCreate(true);
-  };
+  const handleQuickCreate = (groupName: string) => { setName(groupName); setShowCreate(true); };
 
   const copyInviteLink = (inviteCode: string, groupId: string) => {
     const link = `${window.location.origin}/grupo/convite/${inviteCode}`;
@@ -96,32 +68,23 @@ const Grupos = () => {
   const suggestions = defaultSuggestions.filter((s) => !existingNames.includes(s.name));
 
   return (
-    <div className="container mx-auto px-4 md:px-6 py-8 max-w-2xl space-y-8">
-      {/* Header */}
+    <div className="container mx-auto px-4 md:px-8 py-8 md:py-12 max-w-2xl space-y-10 page-enter">
       <div className="flex items-center justify-between">
-        <h2 className="text-2xl sm:text-3xl font-serif font-medium text-foreground">
-          Meus Grupos
-        </h2>
-        <Button
-          onClick={() => setShowCreate(true)}
-          className="rounded-full gap-2"
-          size="sm"
-        >
-          <Plus className="w-4 h-4" />
-          Criar Grupo
+        <h2 className="text-3xl sm:text-4xl font-serif text-foreground tracking-tight">Meus Grupos</h2>
+        <Button onClick={() => setShowCreate(true)} className="rounded-full gap-2 h-10 px-5 text-[13px] font-medium" size="sm">
+          <Plus className="w-4 h-4" /> Criar Grupo
         </Button>
       </div>
 
-      {/* Suggestions */}
       {suggestions.length > 0 && (
         <section>
-          <p className="text-sm text-muted-foreground mb-3">Sugestões para você</p>
+          <p className="text-xs text-muted-foreground mb-3 uppercase tracking-widest font-medium">Sugestões</p>
           <div className="flex flex-wrap gap-2">
             {suggestions.map((s) => (
               <button
                 key={s.name}
                 onClick={() => handleQuickCreate(s.name)}
-                className={`flex items-center gap-2 rounded-full px-4 py-2 text-sm font-medium border transition-all hover:scale-[1.03] active:scale-[0.97] ${s.color}`}
+                className={`flex items-center gap-2 rounded-full px-4 py-2.5 text-sm font-medium border transition-all duration-300 hover:shadow-soft active:scale-[0.97] ${s.color}`}
               >
                 <s.icon className="w-4 h-4" />
                 {s.name}
@@ -131,20 +94,17 @@ const Grupos = () => {
         </section>
       )}
 
-      {/* Groups list */}
       {isLoading ? (
         <div className="space-y-3">
           {[1, 2].map((i) => (
-            <div key={i} className="h-20 rounded-2xl bg-muted/50 animate-pulse" />
+            <div key={i} className="h-20 rounded-2xl bg-muted/30 animate-pulse" />
           ))}
         </div>
       ) : groups.length === 0 ? (
-        <div className="text-center py-16">
-          <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
+        <div className="text-center py-20">
+          <Users className="w-14 h-14 text-muted-foreground/15 mx-auto mb-4" />
           <p className="text-muted-foreground text-sm">Você ainda não tem grupos</p>
-          <p className="text-muted-foreground/60 text-xs mt-1">
-            Crie um grupo para compartilhar desejos
-          </p>
+          <p className="text-muted-foreground/50 text-xs mt-1">Crie um grupo para compartilhar desejos</p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -153,44 +113,34 @@ const Grupos = () => {
             return (
               <div
                 key={group.id}
-                className="flex items-center gap-4 rounded-2xl p-4 bg-card border border-border/50 transition-all hover:border-primary/20 cursor-pointer"
+                className="flex items-center gap-4 rounded-2xl p-4 premium-card cursor-pointer"
                 onClick={() => navigate(`/grupo/${group.id}`)}
               >
-                <div className="w-11 h-11 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
+                <div className="w-12 h-12 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
                   <Users className="w-5 h-5 text-primary" />
                 </div>
-
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-foreground text-sm truncate">
-                      {group.name}
-                    </h3>
-                    <Crown className="w-3.5 h-3.5 text-primary/60 shrink-0" />
+                    <h3 className="font-medium text-foreground text-sm truncate">{group.name}</h3>
+                    <Crown className="w-3.5 h-3.5 text-primary/40 shrink-0" />
                   </div>
                   {group.description && (
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">
-                      {group.description}
-                    </p>
+                    <p className="text-xs text-muted-foreground truncate mt-0.5">{group.description}</p>
                   )}
-                  <div className="flex items-center gap-1 mt-1">
-                    <UserPlus className="w-3 h-3 text-muted-foreground/60" />
-                    <span className="text-xs text-muted-foreground/60">
+                  <div className="flex items-center gap-1 mt-1.5">
+                    <UserPlus className="w-3 h-3 text-muted-foreground/40" />
+                    <span className="text-xs text-muted-foreground/50">
                       {memberCount} {memberCount === 1 ? "membro" : "membros"}
                     </span>
                   </div>
                 </div>
-
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="shrink-0 h-9 w-9 rounded-xl"
+                  className="shrink-0 h-9 w-9 rounded-xl text-muted-foreground/40 hover:text-foreground"
                   onClick={(e) => { e.stopPropagation(); copyInviteLink(group.invite_code, group.id); }}
                 >
-                  {copiedId === group.id ? (
-                    <Check className="w-4 h-4 text-primary" />
-                  ) : (
-                    <Copy className="w-4 h-4 text-muted-foreground" />
-                  )}
+                  {copiedId === group.id ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
                 </Button>
               </div>
             );
@@ -198,9 +148,8 @@ const Grupos = () => {
         </div>
       )}
 
-      {/* Create Dialog */}
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
             <DialogTitle className="font-serif">Criar Grupo</DialogTitle>
           </DialogHeader>
@@ -213,33 +162,16 @@ const Grupos = () => {
             className="space-y-4 mt-2"
           >
             <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">
-                Nome do grupo
-              </label>
-              <Input
-                placeholder="Ex: Família, Amigos do trabalho..."
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                autoFocus
-              />
+              <label className="text-sm font-medium text-foreground mb-1.5 block">Nome do grupo</label>
+              <Input placeholder="Ex: Família, Amigos do trabalho..." value={name} onChange={(e) => setName(e.target.value)} autoFocus className="h-12 rounded-xl" />
             </div>
             <div>
               <label className="text-sm font-medium text-foreground mb-1.5 block">
                 Descrição <span className="text-muted-foreground font-normal">(opcional)</span>
               </label>
-              <Textarea
-                placeholder="Uma breve descrição do grupo..."
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={3}
-                className="resize-none"
-              />
+              <Textarea placeholder="Uma breve descrição do grupo..." value={description} onChange={(e) => setDescription(e.target.value)} rows={3} className="resize-none rounded-xl" />
             </div>
-            <Button
-              type="submit"
-              className="w-full rounded-xl"
-              disabled={!name.trim() || createGroup.isPending}
-            >
+            <Button type="submit" className="w-full h-12 rounded-xl font-medium" disabled={!name.trim() || createGroup.isPending}>
               {createGroup.isPending ? "Criando..." : "Criar Grupo"}
             </Button>
           </form>
