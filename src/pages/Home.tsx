@@ -2,7 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { useLocalUser } from "@/hooks/useLocalUser";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { PlusCircle, Sparkles, ImageOff } from "lucide-react";
+import { PlusCircle, ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const Home = () => {
