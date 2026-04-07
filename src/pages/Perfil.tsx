@@ -42,12 +42,6 @@ const helpItems = [
     question: "Como entrar em um grupo?",
     answer: "Peça o link de convite ao administrador do grupo. Ao abrir o link, você será redirecionado automaticamente para o grupo e poderá visualizar as listas compartilhadas."
   },
-  {
-    id: "reserve-gift",
-    icon: Gift,
-    question: "Como reservar um presente?",
-    answer: "Ao visualizar a lista de outra pessoa, toque no item desejado e selecione \"Reservar\". O item ficará marcado para que outros saibam que já foi escolhido."
-  },
 ];
 
 const Perfil = () => {
