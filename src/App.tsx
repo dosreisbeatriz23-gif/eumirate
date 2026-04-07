@@ -5,6 +5,8 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
+import Onboarding from "./pages/Onboarding";
+import Login from "./pages/Login";
 import AppLayout from "./components/layout/AppLayout";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
@@ -30,8 +32,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Landing page without layout */}
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Onboarding />} />
+            <Route path="/landing" element={<Index />} />
+            <Route path="/login" element={<Login />} />
 
             {/* App pages with shared layout */}
             <Route element={<AppLayout />}>

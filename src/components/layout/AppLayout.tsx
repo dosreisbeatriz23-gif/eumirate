@@ -1,5 +1,6 @@
-import { Outlet, useLocation, useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate, Navigate } from "react-router-dom";
 import { Home, List, PlusCircle, Users, User } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 const desktopLinks = [
@@ -28,6 +29,17 @@ function isActive(current: string, path: string) {
 const AppLayout = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { user, loading } = useAuth();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="animate-pulse text-muted-foreground">Carregando...</div>
+      </div>
+    );
+  }
+
+  if (!user) return <Navigate to="/login" replace />;
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
