@@ -32,8 +32,9 @@ const App = () => (
         <Sonner />
         <BrowserRouter>
           <Routes>
-            {/* Landing page without layout */}
-            <Route path="/" element={<Index />} />
+            <Route path="/" element={<Onboarding />} />
+            <Route path="/landing" element={<Index />} />
+            <Route path="/login" element={<Login />} />
 
             {/* App pages with shared layout */}
             <Route element={<AppLayout />}>
