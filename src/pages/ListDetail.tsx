@@ -52,11 +52,10 @@ const PRICE_FILTERS = [
 
 function parsePriceRange(priceRange: string | null): number {
   if (!priceRange) return 0;
-  const numbers = priceRange.replace(/[^\d.,]/g, " ").split(/\s+/).filter(Boolean);
-  if (numbers.length === 0) return 0;
-  const parsed = numbers.map((n) => parseFloat(n.replace(",", ".")));
-  if (parsed.length >= 2) return (parsed[0] + parsed[1]) / 2;
-  return parsed[0] || 0;
+  // Handle "R$ 1.234,56" format
+  const cleaned = priceRange.replace(/[R$\s.]/g, "").replace(",", ".");
+  const val = parseFloat(cleaned);
+  return isNaN(val) ? 0 : val;
 }
 
 const ListDetail = () => {
