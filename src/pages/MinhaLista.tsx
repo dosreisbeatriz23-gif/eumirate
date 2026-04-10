@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { handleCurrencyChange } from "@/lib/currency";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -293,11 +294,7 @@ const MinhaLista = () => {
                       <Input
                         placeholder="R$ 0,00"
                         value={form.price_range}
-                        onChange={(e) => {
-                          const digits = e.target.value.replace(/\D/g, "");
-                          const { formatBRL } = require("@/lib/currency");
-                          setForm({ ...form, price_range: digits ? formatBRL(digits) : "" });
-                        }}
+                        onChange={(e) => handleCurrencyChange(e.target.value, (v) => setForm({ ...form, price_range: v }))}
                         inputMode="numeric"
                         maxLength={20}
                       />
