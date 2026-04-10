@@ -84,6 +84,7 @@ const AddItem = () => {
   const [extracted, setExtracted] = useState(false);
   const [meta, setMeta] = useState<ExtractedMeta | null>(null);
   const lastExtractedUrl = useRef("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -91,6 +92,8 @@ const AddItem = () => {
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState<"private" | "group">("private");
   const [showDetails, setShowDetails] = useState(false);
+  const [showImageEdit, setShowImageEdit] = useState(false);
+  const [customImageUrl, setCustomImageUrl] = useState("");
 
   const extractMetadata = async (targetUrl: string) => {
     if (!targetUrl.trim() || !isValidUrl(targetUrl)) return;
