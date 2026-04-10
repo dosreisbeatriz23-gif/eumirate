@@ -214,11 +214,11 @@ const AddItem = () => {
       {hasPreview && (
         <div className="rounded-2xl overflow-hidden border border-border/40 bg-card shadow-[var(--shadow-soft)] mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
           {imageUrl ? (
-            <div className="h-44 bg-muted overflow-hidden relative">
+            <div className="w-full aspect-square bg-muted/20 overflow-hidden flex items-center justify-center">
               <img
                 src={imageUrl}
                 alt={name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-contain"
                 onError={(e) => {
                   (e.target as HTMLImageElement).style.display = "none";
                 }}
