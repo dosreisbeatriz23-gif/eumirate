@@ -11,10 +11,141 @@ function truncateTitle(title: string | null, maxWords = 4): string | null {
     .replace(/^[\s\-–—|:,]+|[\s\-–—|:,]+$/g, '')
     .trim();
   if (!cleaned) return null;
-  // Split on separators commonly used in e-commerce titles
   const mainPart = cleaned.split(/\s*[-–—|]\s*/)[0].trim();
   const words = mainPart.split(/\s+/).slice(0, maxWords);
   return words.join(' ');
+}
+
+/** Score an image URL: higher = more likely a good product image */
+function scoreImageUrl(src: string): number {
+  if (!src) return -1;
+  const lower = src.toLowerCase();
+  // Disqualifiers
+  if (lower.includes('data:') || lower.includes('.svg') || lower.includes('pixel') ||
+      lower.includes('tracking') || lower.includes('spacer') || lower.includes('logo') ||
+      lower.includes('icon') || lower.includes('avatar') || lower.includes('badge') ||
+      lower.includes('banner') || lower.includes('promo') || lower.includes('ad-') ||
+      lower.includes('sprite') || lower.includes('placeholder') || lower.length < 20) return -1;
+
+  let score = 0;
+  // Prefer common image extensions
+  if (/\.(jpg|jpeg|png|webp)/i.test(lower)) score += 10;
+  // Prefer larger image hints in URL
+  if (/(\d{3,4})x(\d{3,4})/i.test(lower)) {
+    const m = lower.match(/(\d{3,4})x(\d{3,4})/);
+    if (m) {
+      const w = parseInt(m[1]), h = parseInt(m[2]);
+      if (w >= 400 && h >= 400) score += 20;
+      // Prefer squarish aspect ratios
+      const ratio = Math.max(w, h) / Math.min(w, h);
+      if (ratio <= 1.5) score += 10;
+    }
+  }
+  // Prefer URLs with product-related keywords
+  if (/product|goods|item|main|primary|hero|zoom|large|full/i.test(lower)) score += 15;
+  // Penalize thumbnail indicators
+  if (/thumb|_tn|tiny|small|mini|_s\.|_t\.|50x|100x|150x/i.test(lower)) score -= 10;
+  // Prefer longer URLs (more specific)
+  if (src.length > 80) score += 5;
+  return score;
+}
+
+/** Collect all candidate images from HTML and pick the best ones */
+function collectCandidateImages(html: string, url: string): string[] {
+  const candidates: { src: string; score: number }[] = [];
+  const seen = new Set<string>();
+
+  const addCandidate = (raw: string | null, bonus = 0) => {
+    if (!raw) return;
+    let img = raw.trim();
+    if (img.startsWith('//')) img = 'https:' + img;
+    else if (!img.startsWith('http')) {
+      try { img = new URL(img, new URL(url).origin).href; } catch { return; }
+    }
+    img = img.replace(/_tn\b/g, '');
+    if (seen.has(img)) return;
+    seen.add(img);
+    const s = scoreImageUrl(img);
+    if (s >= 0) candidates.push({ src: img, score: s + bonus });
+  };
+
+  // OG / Twitter
+  const extractMeta = (property: string, name?: string): string | null => {
+    const patterns = [
+      new RegExp(`<meta[^>]*property=["']${property}["'][^>]*content=["']([^"']+)["']`, 'i'),
+      new RegExp(`<meta[^>]*content=["']([^"']+)["'][^>]*property=["']${property}["']`, 'i'),
+    ];
+    if (name) {
+      patterns.push(
+        new RegExp(`<meta[^>]*name=["']${name}["'][^>]*content=["']([^"']+)["']`, 'i'),
+        new RegExp(`<meta[^>]*content=["']([^"']+)["'][^>]*name=["']${name}["']`, 'i'),
+      );
+    }
+    for (const p of patterns) {
+      const m = html.match(p);
+      if (m?.[1]) return m[1].trim();
+    }
+    return null;
+  };
+
+  addCandidate(extractMeta('og:image', 'image'), 30);
+  addCandidate(extractMeta('twitter:image'), 25);
+  addCandidate(extractMeta('twitter:image:src'), 25);
+
+  // itemprop="image"
+  const itempropImg = html.match(/<(?:img|meta)[^>]*itemprop=["']image["'][^>]*(?:content|src)=["']([^"']+)["']/i)
+    || html.match(/<(?:img|meta)[^>]*(?:content|src)=["']([^"']+)["'][^>]*itemprop=["']image["']/i);
+  addCandidate(itempropImg?.[1] ?? null, 20);
+
+  // JSON-LD
+  const jsonLdBlocks = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+  if (jsonLdBlocks) {
+    for (const block of jsonLdBlocks) {
+      const jsonStr = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
+      try {
+        const ld = JSON.parse(jsonStr);
+        const items = ld['@graph'] || [ld];
+        for (const item of (Array.isArray(items) ? items : [items])) {
+          if (item.image) {
+            const imgs = Array.isArray(item.image) ? item.image : [item.image];
+            for (const img of imgs) {
+              if (typeof img === 'string') addCandidate(img, 18);
+              else if (img?.url) addCandidate(img.url, 18);
+              else if (img?.contentUrl) addCandidate(img.contentUrl, 18);
+            }
+          }
+        }
+      } catch { /* ignore */ }
+    }
+  }
+
+  // Site-specific patterns
+  const sheinScript = html.match(/crop_image_url["']?\s*[:=]\s*["']([^"']+)["']/i);
+  addCandidate(sheinScript?.[1] ?? null, 15);
+
+  const amzHires = html.match(/data-old-hires=["']([^"']+)["']/i);
+  addCandidate(amzHires?.[1] ?? null, 25);
+  const amzLanding = html.match(/["']hiRes["']\s*:\s*["']([^"']+)["']/i)
+    || html.match(/["']large["']\s*:\s*["']([^"']+)["']/i);
+  addCandidate(amzLanding?.[1] ?? null, 22);
+
+  const shopeeMatch = html.match(/"image"\s*:\s*"(https?:\/\/[^"]+(?:\.(?:jpg|jpeg|png|webp))[^"]*)"/i);
+  addCandidate(shopeeMatch?.[1] ?? null, 15);
+
+  const mlMatch = html.match(/<figure[^>]*>[\s\S]*?<img[^>]*src=["']([^"']+(?:\.(?:jpg|jpeg|png|webp))[^"']*)["']/i);
+  addCandidate(mlMatch?.[1] ?? null, 12);
+
+  // data-src images (product galleries)
+  const dataSrcMatches = html.matchAll(/data-src=["']([^"']+(?:\.(?:jpg|jpeg|png|webp))[^"']*)["']/gi);
+  for (const m of dataSrcMatches) addCandidate(m[1], 8);
+
+  // Generic img tags
+  const imgMatches = html.matchAll(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi);
+  for (const match of imgMatches) addCandidate(match[1], 0);
+
+  // Sort by score descending, return top candidates
+  candidates.sort((a, b) => b.score - a.score);
+  return candidates.map(c => c.src);
 }
 
 Deno.serve(async (req) => {
@@ -110,110 +241,14 @@ Deno.serve(async (req) => {
       const titleTag = html.match(/<title[^>]*>([^<]+)<\/title>/i);
       if (titleTag?.[1]) title = decodeEntities(titleTag[1].trim());
     }
-    // Truncate to max 4 words
     title = truncateTitle(title);
 
     // ─── Description ───
     const description = extractMeta('og:description', 'description');
 
-    // ─── Image (enhanced multi-site extraction) ───
-    let image: string | null = null;
-
-    // 1. Standard OG / Twitter
-    image = extractMeta('og:image', 'image');
-    if (!image) image = extractMeta('twitter:image');
-    if (!image) image = extractMeta('twitter:image:src');
-
-    // 2. itemprop="image"
-    if (!image) {
-      const itempropImg = html.match(/<(?:img|meta)[^>]*itemprop=["']image["'][^>]*(?:content|src)=["']([^"']+)["']/i)
-        || html.match(/<(?:img|meta)[^>]*(?:content|src)=["']([^"']+)["'][^>]*itemprop=["']image["']/i);
-      if (itempropImg?.[1]) image = itempropImg[1];
-    }
-
-    // 3. JSON-LD
-    if (!image) {
-      const jsonLdBlocks = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
-      if (jsonLdBlocks) {
-        for (const block of jsonLdBlocks) {
-          const jsonStr = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
-          try {
-            const ld = JSON.parse(jsonStr);
-            const items = ld['@graph'] || [ld];
-            for (const item of (Array.isArray(items) ? items : [items])) {
-              if (item.image) {
-                const img = Array.isArray(item.image) ? item.image[0] : item.image;
-                if (typeof img === 'string') { image = img; break; }
-                if (img?.url) { image = img.url; break; }
-                if (img?.contentUrl) { image = img.contentUrl; break; }
-              }
-            }
-            if (image) break;
-          } catch { /* ignore */ }
-        }
-      }
-    }
-
-    // 4. Shein: data-src on product/gallery images, or crop_image_url in inline scripts
-    if (!image) {
-      const sheinScript = html.match(/crop_image_url["']?\s*[:=]\s*["']([^"']+)["']/i);
-      if (sheinScript?.[1]) image = sheinScript[1];
-    }
-    if (!image) {
-      const dataSrcMatch = html.match(/<img[^>]*(?:class=["'][^"']*(?:product|gallery|goods|main|zoom|hero)[^"']*["'][^>]*)?data-src=["']([^"']+(?:\.(?:jpg|jpeg|png|webp))[^"']*)["']/i);
-      if (dataSrcMatch?.[1]) image = dataSrcMatch[1];
-    }
-
-    // 5. Amazon: specific patterns (landingImage, imgTagWrapperId, data-old-hires)
-    if (!image) {
-      const amzHires = html.match(/data-old-hires=["']([^"']+)["']/i);
-      if (amzHires?.[1]) image = amzHires[1];
-    }
-    if (!image) {
-      const amzLanding = html.match(/["']hiRes["']\s*:\s*["']([^"']+)["']/i)
-        || html.match(/["']large["']\s*:\s*["']([^"']+)["']/i);
-      if (amzLanding?.[1]) image = amzLanding[1];
-    }
-
-    // 6. Shopee: product images in __NEXT_DATA__ or ssrProps
-    if (!image) {
-      const shopeeMatch = html.match(/"image"\s*:\s*"(https?:\/\/[^"]+(?:\.(?:jpg|jpeg|png|webp))[^"]*)"/i);
-      if (shopeeMatch?.[1]) image = shopeeMatch[1];
-    }
-
-    // 7. Mercado Livre: figure/img patterns
-    if (!image) {
-      const mlMatch = html.match(/<figure[^>]*>[\s\S]*?<img[^>]*src=["']([^"']+(?:\.(?:jpg|jpeg|png|webp))[^"']*)["']/i);
-      if (mlMatch?.[1]) image = mlMatch[1];
-    }
-
-    // 8. Generic fallback: first valid product-like image
-    if (!image) {
-      const imgMatches = html.matchAll(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi);
-      for (const match of imgMatches) {
-        const src = match[1];
-        if (!src) continue;
-        if (src.includes('data:') || src.includes('.svg') || src.includes('pixel') || src.includes('tracking') || src.includes('spacer') || src.includes('logo') || src.includes('icon') || src.includes('avatar') || src.includes('badge') || src.length < 20) continue;
-        if (/\.(jpg|jpeg|png|webp)/i.test(src)) {
-          image = src;
-          break;
-        }
-      }
-    }
-
-    // Normalize URL
-    if (image) {
-      if (image.startsWith('//')) {
-        image = 'https:' + image;
-      } else if (!image.startsWith('http')) {
-        try {
-          const baseUrl = new URL(url);
-          image = new URL(image, baseUrl.origin).href;
-        } catch { /* ignore */ }
-      }
-      // Remove Shopee/Shein thumbnail suffixes to get full-size image
-      image = image.replace(/_tn\b/g, '');
-    }
+    // ─── Image (scored candidate system) ───
+    const rankedImages = collectCandidateImages(html, url);
+    const image = rankedImages.length > 0 ? rankedImages[0] : null;
 
     // ─── Price ───
     let price = extractMeta('product:price:amount');
@@ -244,7 +279,7 @@ Deno.serve(async (req) => {
       if (priceMatch?.[1]) price = priceMatch[1];
     }
 
-    console.log('Extracted:', { title, description: !!description, image: !!image, price });
+    console.log('Extracted:', { title, description: !!description, image: !!image, price, candidates: rankedImages.length });
 
     return new Response(
       JSON.stringify({

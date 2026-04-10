@@ -18,6 +18,9 @@ import {
   ChevronDown,
   ChevronUp,
   Check,
+  Camera,
+  ImagePlus,
+  X,
 } from "lucide-react";
 
 interface ExtractedMeta {
@@ -81,6 +84,7 @@ const AddItem = () => {
   const [extracted, setExtracted] = useState(false);
   const [meta, setMeta] = useState<ExtractedMeta | null>(null);
   const lastExtractedUrl = useRef("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [name, setName] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -88,6 +92,8 @@ const AddItem = () => {
   const [description, setDescription] = useState("");
   const [visibility, setVisibility] = useState<"private" | "group">("private");
   const [showDetails, setShowDetails] = useState(false);
+  const [showImageEdit, setShowImageEdit] = useState(false);
+  const [customImageUrl, setCustomImageUrl] = useState("");
 
   const extractMetadata = async (targetUrl: string) => {
     if (!targetUrl.trim() || !isValidUrl(targetUrl)) return;
@@ -173,8 +179,41 @@ const AddItem = () => {
 
   const hasPreview = !!(meta || name);
 
+  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      toast.error("Selecione um arquivo de imagem");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setImageUrl(reader.result as string);
+      setShowImageEdit(false);
+      toast.success("Imagem atualizada!");
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCustomImageUrl = () => {
+    if (!customImageUrl.trim()) return;
+    setImageUrl(customImageUrl.trim());
+    setCustomImageUrl("");
+    setShowImageEdit(false);
+    toast.success("Imagem atualizada!");
+  };
+
   return (
     <div className="container mx-auto px-4 md:px-6 py-6 md:py-10 max-w-lg">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*"
+        className="hidden"
+        onChange={handleFileUpload}
+      />
+
       {/* Title */}
       <div className="text-center mb-8">
         <h2 className="text-2xl md:text-3xl font-serif font-medium text-foreground">
@@ -213,8 +252,8 @@ const AddItem = () => {
       {/* Preview Card */}
       {hasPreview && (
         <div className="rounded-2xl overflow-hidden border border-border/40 bg-card shadow-[var(--shadow-soft)] mb-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
-          {imageUrl ? (
-            <div className="w-full aspect-square bg-muted/20 overflow-hidden">
+          <div className="relative w-full aspect-square bg-muted/20 overflow-hidden group">
+            {imageUrl ? (
               <img
                 src={imageUrl}
                 alt={name}
@@ -223,12 +262,74 @@ const AddItem = () => {
                   (e.target as HTMLImageElement).style.display = "none";
                 }}
               />
-            </div>
-          ) : (
-            <div className="h-32 bg-muted/30 flex items-center justify-center">
-              <Gift className="w-10 h-10 text-muted-foreground/20" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <Gift className="w-10 h-10 text-muted-foreground/20" />
+              </div>
+            )}
+            {/* Image edit overlay */}
+            <button
+              type="button"
+              onClick={() => setShowImageEdit(!showImageEdit)}
+              className="absolute bottom-3 right-3 bg-background/80 backdrop-blur-sm border border-border/60 rounded-full p-2.5 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background shadow-sm md:opacity-70"
+              title="Alterar imagem"
+            >
+              <Camera className="w-4 h-4 text-foreground" />
+            </button>
+          </div>
+
+          {/* Image edit panel */}
+          {showImageEdit && (
+            <div className="p-4 border-t border-border/30 space-y-3 animate-in fade-in slide-in-from-top-1 duration-200 bg-muted/10">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-foreground">Alterar imagem</span>
+                <button type="button" onClick={() => setShowImageEdit(false)}>
+                  <X className="w-4 h-4 text-muted-foreground" />
+                </button>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex items-center justify-center gap-2 rounded-xl p-3 border border-border bg-card text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
+                >
+                  <ImagePlus className="w-4 h-4" />
+                  Galeria
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const urlInput = document.getElementById("custom-image-url");
+                    if (urlInput) urlInput.focus();
+                  }}
+                  className="flex items-center justify-center gap-2 rounded-xl p-3 border border-border bg-card text-sm font-medium text-foreground hover:bg-muted/50 transition-colors"
+                >
+                  <LinkIcon className="w-4 h-4" />
+                  URL
+                </button>
+              </div>
+              <div className="flex gap-2">
+                <Input
+                  id="custom-image-url"
+                  placeholder="Cole a URL da imagem..."
+                  value={customImageUrl}
+                  onChange={(e) => setCustomImageUrl(e.target.value)}
+                  className="h-10 rounded-xl text-sm flex-1"
+                  onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), handleCustomImageUrl())}
+                />
+                <Button
+                  type="button"
+                  size="sm"
+                  onClick={handleCustomImageUrl}
+                  disabled={!customImageUrl.trim()}
+                  className="h-10 rounded-xl px-4"
+                >
+                  OK
+                </Button>
+              </div>
             </div>
           )}
+
           <div className="p-4 space-y-1.5">
             <h3 className="font-serif font-medium text-foreground text-lg leading-tight line-clamp-2">
               {name || "Sem título"}
