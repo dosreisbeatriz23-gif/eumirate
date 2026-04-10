@@ -44,44 +44,50 @@ const AppLayout = () => {
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Desktop Header */}
-      <header className="hidden md:block bg-card/80 backdrop-blur-xl border-b border-border/40 sticky top-0 z-50">
-        <div className="container mx-auto px-8 h-16 flex items-center justify-between">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="text-xl font-serif tracking-tight text-foreground hover:opacity-70 transition-opacity"
-          >
-            EUMIRATE
-          </button>
-          <nav className="flex items-center gap-0.5">
-            {desktopLinks.map((link) => (
-              <button
-                key={link.path}
-                onClick={() => navigate(link.path)}
-                className={cn(
-                  "px-4 py-2 rounded-full text-[13px] font-medium tracking-wide transition-all duration-300",
-                  isActive(location.pathname, link.path)
-                    ? "text-foreground bg-muted"
-                    : "text-muted-foreground hover:text-foreground"
-                )}
-              >
-                {link.label}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </header>
+      <div className="hidden md:flex flex-col sticky top-0 z-50">
+        <div className="h-1 bg-primary" />
+        <header className="bg-card/80 backdrop-blur-xl border-b border-border/40">
+          <div className="container mx-auto px-8 h-16 flex items-center justify-between">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="text-xl font-serif tracking-tight text-foreground hover:opacity-70 transition-opacity"
+            >
+              EUMIRATE
+            </button>
+            <nav className="flex items-center gap-0.5">
+              {desktopLinks.map((link) => (
+                <button
+                  key={link.path}
+                  onClick={() => navigate(link.path)}
+                  className={cn(
+                    "px-4 py-2 rounded-full text-[13px] font-medium tracking-wide transition-all duration-300",
+                    isActive(location.pathname, link.path)
+                      ? "text-foreground bg-muted"
+                      : "text-muted-foreground hover:text-foreground"
+                  )}
+                >
+                  {link.label}
+                </button>
+              ))}
+            </nav>
+          </div>
+        </header>
+      </div>
 
       {/* Mobile Header */}
-      <header className="md:hidden bg-card/80 backdrop-blur-xl border-b border-border/40 sticky top-0 z-50">
-        <div className="px-5 h-14 flex items-center">
-          <button
-            onClick={() => navigate("/dashboard")}
-            className="text-lg font-serif tracking-tight text-foreground"
-          >
-            EUMIRATE
-          </button>
-        </div>
-      </header>
+      <div className="md:hidden flex flex-col sticky top-0 z-50">
+        <div className="h-1 bg-primary" />
+        <header className="bg-card/80 backdrop-blur-xl border-b border-border/40">
+          <div className="px-5 h-14 flex items-center">
+            <button
+              onClick={() => navigate("/dashboard")}
+              className="text-lg font-serif tracking-tight text-foreground"
+            >
+              EUMIRATE
+            </button>
+          </div>
+        </header>
+      </div>
 
       {/* Page Content */}
       <main className="flex-1 pb-24 md:pb-0">
