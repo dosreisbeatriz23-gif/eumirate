@@ -36,11 +36,13 @@ const Home = () => {
       {/* Header */}
       <div className="flex items-end justify-between mb-10">
         <div>
-          <h1 className="text-3xl sm:text-4xl font-serif text-foreground tracking-tight">
+          <h1 className="whitespace-nowrap text-2xl sm:text-4xl font-serif text-foreground tracking-tight">
             Mural de Inspiração
           </h1>
-          <p className="text-sm font-medium text-muted-foreground tracking-widest uppercase mt-1.5">
-            MEUS DESEJOS
+          <p className="text-sm font-medium tracking-widest uppercase mt-2 flex items-center gap-2">
+            <span className="inline-block w-5 h-0.5 bg-primary rounded-full" />
+            <span className="text-primary">MEUS DESEJOS</span>
+            <span className="inline-block w-5 h-0.5 bg-primary rounded-full" />
           </p>
         </div>
         <Button
