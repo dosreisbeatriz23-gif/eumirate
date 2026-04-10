@@ -291,10 +291,15 @@ const MinhaLista = () => {
                     <div>
                       <label className="text-sm font-medium text-foreground mb-1.5 block font-sans">Faixa de preço</label>
                       <Input
-                        placeholder="R$ 100 - 200"
+                        placeholder="R$ 0,00"
                         value={form.price_range}
-                        onChange={(e) => setForm({ ...form, price_range: e.target.value })}
-                        maxLength={50}
+                        onChange={(e) => {
+                          const digits = e.target.value.replace(/\D/g, "");
+                          const { formatBRL } = require("@/lib/currency");
+                          setForm({ ...form, price_range: digits ? formatBRL(digits) : "" });
+                        }}
+                        inputMode="numeric"
+                        maxLength={20}
                       />
                     </div>
                     <div>

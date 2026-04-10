@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { handleCurrencyChange, formatBRL } from "@/lib/currency";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -106,7 +107,7 @@ const AddItem = () => {
         setName(shortName);
         setImageUrl(d.image ?? "");
         setDescription("");
-        setPriceRange(d.price ? `R$ ${d.price}` : "");
+        setPriceRange(d.price ? formatBRL(String(d.price).replace(/\D/g, "")) : "");
         setExtracted(true);
         toast.success("Dados extraídos automaticamente!");
       } else {
@@ -264,10 +265,11 @@ const AddItem = () => {
         <div>
           <label className="text-sm font-medium text-foreground mb-1.5 block">Faixa de preço</label>
           <Input
-            placeholder="R$ 100 - 200"
+            placeholder="R$ 0,00"
             value={priceRange}
-            onChange={(e) => setPriceRange(e.target.value)}
-            maxLength={50}
+            onChange={(e) => handleCurrencyChange(e.target.value, setPriceRange)}
+            inputMode="numeric"
+            maxLength={20}
             className="h-11 rounded-xl"
           />
         </div>
