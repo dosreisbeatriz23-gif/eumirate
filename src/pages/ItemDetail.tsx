@@ -85,15 +85,17 @@ const ItemDetail = () => {
       <div className="flex-1 flex flex-col items-center w-full">
         {/* Image section */}
         <div className="w-full max-w-lg px-5 pt-16 pb-2">
-          <div className="w-full aspect-square rounded-2xl overflow-hidden bg-muted/10 border border-border/20 shadow-card flex items-center justify-center">
+          <div className="w-full aspect-square rounded-2xl overflow-hidden bg-muted/10 border border-border/20 shadow-card">
             {item.image_url ? (
               <img
                 src={item.image_url}
                 alt={item.name}
-                className="w-full h-full object-contain"
+                className="w-full h-full object-cover"
               />
             ) : (
-              <Gift className="w-16 h-16 text-muted-foreground/15" />
+              <div className="w-full h-full flex items-center justify-center">
+                <Gift className="w-16 h-16 text-muted-foreground/15" />
+              </div>
             )}
           </div>
         </div>
