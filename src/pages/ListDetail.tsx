@@ -245,7 +245,8 @@ const ListDetail = () => {
             {filteredItems.map((item) => (
               <Card
                 key={item.id}
-                className="group rounded-2xl overflow-hidden hover-lift border-border/50 relative"
+                className="group rounded-2xl overflow-hidden hover-lift border-border/50 relative cursor-pointer"
+                onClick={() => navigate(`/item/${item.id}`)}
               >
                 {item.image_url ? (
                   <div className="h-40 bg-muted overflow-hidden">
@@ -279,7 +280,7 @@ const ListDetail = () => {
                   )}
                   <div className="flex items-center gap-1 pt-1">
                     {item.external_link && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                         <a href={item.external_link} target="_blank" rel="noopener noreferrer" title="Abrir link">
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
@@ -290,7 +291,8 @@ const ListDetail = () => {
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           setMovingItemId(item.id);
                           setTargetListId("");
                           setMoveDialogOpen(true);
@@ -304,7 +306,7 @@ const ListDetail = () => {
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => setDeletingItemId(item.id)}
+                      onClick={(e) => { e.stopPropagation(); setDeletingItemId(item.id); }}
                       title="Remover"
                     >
                       <Trash2 className="w-3.5 h-3.5" />

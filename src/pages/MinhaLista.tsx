@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { handleCurrencyChange } from "@/lib/currency";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
@@ -59,6 +60,7 @@ const emptyForm = {
 
 const MinhaLista = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
@@ -348,7 +350,7 @@ const MinhaLista = () => {
 
             {/* Item Cards */}
             {items.map((item) => (
-              <Card key={item.id} className="group rounded-2xl overflow-hidden hover-lift border-border/50 relative">
+              <Card key={item.id} className="group rounded-2xl overflow-hidden hover-lift border-border/50 relative cursor-pointer" onClick={() => navigate(`/item/${item.id}`)}>
                 {/* Image */}
                 {item.image_url ? (
                   <div className="h-40 bg-muted overflow-hidden">
@@ -373,15 +375,9 @@ const MinhaLista = () => {
                 )}
 
                 <CardContent className="p-4 space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <h3 className="font-serif font-medium text-foreground text-base leading-tight line-clamp-2">
-                      {item.name}
-                    </h3>
-                  </div>
-
-                  {item.description && (
-                    <p className="text-sm text-muted-foreground line-clamp-2">{item.description}</p>
-                  )}
+                  <h3 className="font-serif font-medium text-foreground text-base leading-tight line-clamp-2">
+                    {item.name}
+                  </h3>
 
                   <div className="flex items-center gap-2 flex-wrap">
                     {item.price_range && (
@@ -399,20 +395,20 @@ const MinhaLista = () => {
                   {/* Actions */}
                   <div className="flex items-center gap-1 pt-1">
                     {item.external_link && (
-                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild>
+                      <Button variant="ghost" size="icon" className="h-8 w-8" asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                         <a href={item.external_link} target="_blank" rel="noopener noreferrer">
                           <ExternalLink className="w-3.5 h-3.5" />
                         </a>
                       </Button>
                     )}
-                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(item)}>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={(e) => { e.stopPropagation(); openEdit(item); }}>
                       <Pencil className="w-3.5 h-3.5" />
                     </Button>
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-destructive hover:text-destructive"
-                      onClick={() => setDeletingItemId(item.id)}
+                      onClick={(e) => { e.stopPropagation(); setDeletingItemId(item.id); }}
                     >
                       <Trash2 className="w-3.5 h-3.5" />
                     </Button>

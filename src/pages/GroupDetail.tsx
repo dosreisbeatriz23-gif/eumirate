@@ -227,7 +227,8 @@ const GroupDetail = () => {
           {filteredItems.map((item) => (
             <Card
               key={item.id}
-              className="group rounded-2xl overflow-hidden border-border/50 hover:border-primary/20 transition-all"
+              className="group rounded-2xl overflow-hidden border-border/50 hover:border-primary/20 transition-all cursor-pointer"
+              onClick={() => navigate(`/item/${item.id}`)}
             >
               {item.image_url ? (
                 <div className="h-40 bg-muted overflow-hidden">
@@ -254,30 +255,14 @@ const GroupDetail = () => {
                 <h3 className="font-serif font-medium text-foreground text-sm leading-tight line-clamp-2">
                   {item.name}
                 </h3>
-                {item.description && (
-                  <p className="text-xs text-muted-foreground line-clamp-2">{item.description}</p>
-                )}
                 {item.price_range && (
                   <span className="inline-block text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
                     {item.price_range}
                   </span>
                 )}
-                {item.priority && (
-                  <span
-                    className={`inline-block text-xs px-2 py-0.5 rounded-full ml-1 ${
-                      item.priority === "alta"
-                        ? "bg-destructive/10 text-destructive"
-                        : item.priority === "média"
-                        ? "bg-accent text-accent-foreground"
-                        : "bg-muted text-muted-foreground"
-                    }`}
-                  >
-                    {item.priority}
-                  </span>
-                )}
                 {item.external_link && (
                   <div className="pt-1">
-                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" asChild>
+                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
                       <a href={item.external_link} target="_blank" rel="noopener noreferrer">
                         <ExternalLink className="w-3 h-3" />
                         Ver produto
