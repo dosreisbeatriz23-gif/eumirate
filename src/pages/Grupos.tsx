@@ -68,7 +68,7 @@ const Grupos = () => {
     const link = `${window.location.origin}/grupo/convite/${inviteCode}`;
     navigator.clipboard.writeText(link);
     setCopiedId(groupId);
-    toast.success("Link copiado!");
+    toast.success("Link copiado com sucesso!", { description: "Envie para quem quiser convidar ao grupo." });
     setTimeout(() => setCopiedId(null), 2000);
   };
 
@@ -143,12 +143,13 @@ const Grupos = () => {
                   </div>
                 </div>
                 <Button
-                  variant="ghost"
-                  size="icon"
-                  className="shrink-0 h-9 w-9 rounded-xl text-muted-foreground/40 hover:text-foreground"
+                  variant="outline"
+                  size="sm"
+                  className="shrink-0 rounded-full gap-1.5 h-8 px-3 text-xs font-medium"
                   onClick={(e) => { e.stopPropagation(); copyInviteLink(group.invite_code, group.id); }}
                 >
-                  {copiedId === group.id ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
+                  {copiedId === group.id ? <Check className="w-3.5 h-3.5 text-primary" /> : <UserPlus className="w-3.5 h-3.5" />}
+                  <span>{copiedId === group.id ? "Copiado!" : "Convidar"}</span>
                 </Button>
               </div>
             );

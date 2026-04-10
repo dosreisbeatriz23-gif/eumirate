@@ -112,7 +112,7 @@ const GroupDetail = () => {
     const link = `${window.location.origin}/grupo/convite/${group.invite_code}`;
     navigator.clipboard.writeText(link);
     setCopied(true);
-    toast.success("Link copiado!");
+    toast.success("Link copiado com sucesso!", { description: "Envie para quem quiser convidar ao grupo." });
     setTimeout(() => setCopied(false), 2000);
   };
 
@@ -150,24 +150,37 @@ const GroupDetail = () => {
         <span>{items.length} {items.length === 1 ? "presente" : "presentes"} compartilhados</span>
       </div>
 
-      {/* How to invite guide */}
-      <div className="rounded-2xl border border-border/50 bg-card p-4 space-y-3">
-        <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
-          <UserPlus className="w-4 h-4 text-primary" />
-          Como adicionar integrantes
-        </h3>
-        <div className="space-y-2">
-          <div className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">1</span>
-            <p className="text-xs text-muted-foreground">Clique em <strong className="text-foreground">"Convidar"</strong> acima para copiar o link de convite do grupo.</p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">2</span>
-            <p className="text-xs text-muted-foreground">Envie o link por <strong className="text-foreground">WhatsApp, e-mail ou qualquer mensageiro</strong> para quem quiser convidar.</p>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="w-6 h-6 rounded-full bg-primary/10 text-primary text-xs font-bold flex items-center justify-center shrink-0 mt-0.5">3</span>
-            <p className="text-xs text-muted-foreground">Ao abrir o link, a pessoa entra automaticamente no grupo e pode ver as listas dos membros.</p>
+      {/* Invite section */}
+      <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
+        <div className="p-4 pb-3 flex items-center justify-between">
+          <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+            <UserPlus className="w-4 h-4 text-primary" />
+            Convidar pessoas
+          </h3>
+        </div>
+        <div className="px-4 pb-4">
+          <Button
+            variant="outline"
+            className="w-full rounded-xl h-11 gap-2 font-medium text-sm"
+            onClick={handleCopy}
+          >
+            {copied ? <Check className="w-4 h-4 text-primary" /> : <Copy className="w-4 h-4" />}
+            {copied ? "Link copiado com sucesso!" : "Copiar link de convite"}
+          </Button>
+          <p className="text-[11px] text-muted-foreground text-center mt-2.5 leading-relaxed">
+            Copie este link e envie para quem quiser. Ao acessar, a pessoa poderá entrar no grupo após fazer login.
+          </p>
+        </div>
+        <div className="border-t border-border/40 px-4 py-3 bg-muted/30">
+          <div className="flex items-start gap-2.5">
+            <div className="flex gap-1.5 shrink-0 mt-0.5">
+              <span className="w-1.5 h-1.5 rounded-full bg-primary/60" />
+              <span className="w-1.5 h-1.5 rounded-full bg-primary/40" />
+              <span className="w-1.5 h-1.5 rounded-full bg-primary/20" />
+            </div>
+            <p className="text-[11px] text-muted-foreground/70 leading-relaxed">
+              Funciona com <strong className="text-muted-foreground">WhatsApp, e-mail, Instagram</strong> ou qualquer mensageiro.
+            </p>
           </div>
         </div>
       </div>
