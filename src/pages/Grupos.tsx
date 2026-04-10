@@ -130,7 +130,7 @@ const Grupos = () => {
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
                     <h3 className="font-medium text-foreground text-sm truncate">{group.name}</h3>
-                    <Crown className="w-3.5 h-3.5 text-primary/40 shrink-0" />
+                    {group.owner_id === userId && <Crown className="w-3.5 h-3.5 text-primary/40 shrink-0" />}
                   </div>
                   {group.description && (
                     <p className="text-xs text-muted-foreground truncate mt-0.5">{group.description}</p>
