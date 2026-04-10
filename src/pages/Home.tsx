@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useLocalUser } from "@/hooks/useLocalUser";
+import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PlusCircle, ImageOff } from "lucide-react";
@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 
 const Home = () => {
   const navigate = useNavigate();
-  const { userId } = useLocalUser();
+  const { user } = useAuth();
+  const userId = user?.id;
 
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["all-items-mural", userId],

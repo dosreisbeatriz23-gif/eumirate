@@ -1,13 +1,14 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { useLocalUser } from "@/hooks/useLocalUser";
+import { useAuth } from "@/contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Plus, Gift, List } from "lucide-react";
 
 const Dashboard = () => {
-  const { userId } = useLocalUser();
+  const { user } = useAuth();
+  const userId = user?.id;
   const navigate = useNavigate();
 
   const { data: wishlists = [], isLoading } = useQuery({

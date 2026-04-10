@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useLocalUser } from "@/hooks/useLocalUser";
+import { useAuth } from "@/contexts/AuthContext";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -19,7 +19,8 @@ const defaultSuggestions = [
 ];
 
 const Grupos = () => {
-  const { userId } = useLocalUser();
+  const { user } = useAuth();
+  const userId = user?.id;
   const navigate = useNavigate();
   const queryClient = useQueryClient();
 

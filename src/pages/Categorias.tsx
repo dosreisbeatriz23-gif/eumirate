@@ -1,5 +1,5 @@
 import { useNavigate } from "react-router-dom";
-import { useLocalUser } from "@/hooks/useLocalUser";
+import { useAuth } from "@/contexts/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -43,7 +43,8 @@ const categoriasGerais = [
 ];
 
 const Categorias = () => {
-  const { userId } = useLocalUser();
+  const { user } = useAuth();
+  const userId = user?.id;
   const navigate = useNavigate();
 
   const { data: wishlists = [] } = useQuery({
