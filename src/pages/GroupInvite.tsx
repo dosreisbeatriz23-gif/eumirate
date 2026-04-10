@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
-import { useLocalUser } from "@/hooks/useLocalUser";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Users, CheckCircle, XCircle, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -10,7 +10,8 @@ type Status = "loading" | "preview" | "joining" | "joined" | "already" | "error"
 
 const GroupInvite = () => {
   const { code } = useParams<{ code: string }>();
-  const { userId } = useLocalUser();
+  const { user } = useAuth();
+  const userId = user?.id;
   const navigate = useNavigate();
 
   const [status, setStatus] = useState<Status>("loading");
