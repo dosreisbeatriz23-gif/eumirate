@@ -60,6 +60,7 @@ const emptyForm = {
 
 const MinhaLista = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<WishlistItem | null>(null);
