@@ -56,8 +56,6 @@ function parsePriceRange(priceRange: string | null): number {
   const cleaned = priceRange.replace(/[R$\s.]/g, "").replace(",", ".");
   const val = parseFloat(cleaned);
   return isNaN(val) ? 0 : val;
-  if (parsed.length >= 2) return (parsed[0] + parsed[1]) / 2;
-  return parsed[0] || 0;
 }
 
 const ListDetail = () => {
