@@ -18,6 +18,9 @@ import {
   ChevronDown,
   ChevronUp,
   Check,
+  Camera,
+  ImagePlus,
+  X,
 } from "lucide-react";
 
 interface ExtractedMeta {
