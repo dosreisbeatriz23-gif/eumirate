@@ -3,7 +3,7 @@ import { handleCurrencyChange, formatBRL } from "@/lib/currency";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -42,6 +42,8 @@ const isValidUrl = (str: string) => {
 
 const AddItem = () => {
   const { id: paramListId } = useParams<{ id: string }>();
+  const [searchParams] = useSearchParams();
+  const groupId = searchParams.get("group");
   const { user } = useAuth();
   const userId = user?.id;
   const navigate = useNavigate();
@@ -90,7 +92,7 @@ const AddItem = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [priceRange, setPriceRange] = useState("");
   const [description, setDescription] = useState("");
-  const [visibility, setVisibility] = useState<"private" | "group">("private");
+  const [visibility, setVisibility] = useState<"private" | "group">(groupId ? "group" : "private");
   const [showDetails, setShowDetails] = useState(false);
   const [showImageEdit, setShowImageEdit] = useState(false);
   const [customImageUrl, setCustomImageUrl] = useState("");
@@ -165,8 +167,14 @@ const AddItem = () => {
     onSuccess: (savedListId) => {
       queryClient.invalidateQueries({ queryKey: ["wishlist-items", savedListId] });
       queryClient.invalidateQueries({ queryKey: ["wishlists"] });
-      toast.success("Item adicionado com sucesso!");
-      navigate("/meus-desejos", { replace: true });
+      if (groupId) {
+        queryClient.invalidateQueries({ queryKey: ["group-items"] });
+        toast.success("Item adicionado ao grupo!");
+        navigate(`/grupo/${groupId}`, { replace: true });
+      } else {
+        toast.success("Item adicionado com sucesso!");
+        navigate("/meus-desejos", { replace: true });
+      }
     },
     onError: () => toast.error("Erro ao salvar item"),
   });

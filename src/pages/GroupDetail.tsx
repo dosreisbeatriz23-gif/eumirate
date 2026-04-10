@@ -14,6 +14,7 @@ import {
   Check,
   Filter,
   UserPlus,
+  Plus,
 } from "lucide-react";
 import { toast } from "sonner";
 
@@ -72,16 +73,16 @@ const GroupDetail = () => {
 
   const memberIds = members.map((m) => m.user_id);
 
-  // Get all group-visible items from members' wishlists
+  // Get all group-visible items from members' wishlists, with author info
   const { data: items = [], isLoading } = useQuery({
     queryKey: ["group-items", id, memberIds],
     queryFn: async () => {
       if (memberIds.length === 0) return [];
 
-      // Get wishlists owned by members
+      // Get wishlists owned by members (with user_id)
       const { data: wishlists, error: wErr } = await supabase
         .from("wishlists")
-        .select("id")
+        .select("id, user_id")
         .in("user_id", memberIds);
       if (wErr) throw wErr;
 
@@ -95,7 +96,26 @@ const GroupDetail = () => {
         .eq("visibility", "group")
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data;
+
+      // Build wishlist_id → user_id map
+      const wlUserMap: Record<string, string> = {};
+      wishlists?.forEach((w) => { wlUserMap[w.id] = w.user_id; });
+
+      // Fetch profiles for all member user_ids
+      const uniqueUserIds = [...new Set(Object.values(wlUserMap))];
+      const { data: profiles } = await supabase
+        .from("profiles")
+        .select("user_id, display_name")
+        .in("user_id", uniqueUserIds);
+
+      const profileMap: Record<string, string> = {};
+      profiles?.forEach((p) => { profileMap[p.user_id] = p.display_name || "Membro"; });
+
+      // Attach author name to each item
+      return (data || []).map((item) => ({
+        ...item,
+        author_name: profileMap[wlUserMap[item.wishlist_id]] || "Membro",
+      }));
     },
     enabled: memberIds.length > 0,
   });
@@ -139,6 +159,14 @@ const GroupDetail = () => {
         <Button variant="outline" size="sm" className="rounded-full gap-2 shrink-0" onClick={handleCopy}>
           {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
           <span className="hidden sm:inline">{copied ? "Copiado!" : "Convidar"}</span>
+        </Button>
+        <Button
+          size="sm"
+          className="rounded-full gap-2 shrink-0"
+          onClick={() => navigate(`/adicionar?group=${id}`)}
+        >
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">Adicionar item</span>
         </Button>
       </div>
 
@@ -272,6 +300,11 @@ const GroupDetail = () => {
                   <span className="inline-block text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
                     {item.price_range}
                   </span>
+                )}
+                {item.author_name && (
+                  <p className="text-[11px] text-muted-foreground/70 truncate">
+                    Adicionado por {item.author_name}
+                  </p>
                 )}
                 {item.external_link && (
                   <div className="pt-1">
