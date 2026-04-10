@@ -245,6 +245,10 @@ export type Database = {
         Returns: boolean
       }
       get_wishlist_by_share_token: { Args: { token: string }; Returns: string }
+      is_group_member: {
+        Args: { _group_id: string; _user_id: string }
+        Returns: boolean
+      }
       owns_wishlist: { Args: { wishlist_uuid: string }; Returns: boolean }
       owns_wishlist_item: { Args: { item_uuid: string }; Returns: boolean }
     }
