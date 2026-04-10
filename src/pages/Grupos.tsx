@@ -32,11 +32,18 @@ const Grupos = () => {
   const { data: groups = [], isLoading } = useQuery({
     queryKey: ["groups", userId],
     queryFn: async () => {
+      // Get all group IDs where user is a member
+      const { data: memberships, error: memErr } = await supabase
+        .from("group_members").select("group_id").eq("user_id", userId!);
+      if (memErr) throw memErr;
+      const groupIds = memberships?.map((m) => m.group_id) || [];
+      if (groupIds.length === 0) return [];
       const { data, error } = await supabase
-        .from("groups").select("*, group_members(count)").eq("owner_id", userId).order("created_at", { ascending: false });
+        .from("groups").select("*, group_members(count)").in("id", groupIds).order("created_at", { ascending: false });
       if (error) throw error;
       return data;
     },
+    enabled: !!userId,
   });
 
   const createGroup = useMutation({
