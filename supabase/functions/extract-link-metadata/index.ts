@@ -3,6 +3,20 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
 
+function truncateTitle(title: string | null, maxWords = 4): string | null {
+  if (!title) return null;
+  const cleaned = title
+    .replace(/[\r\n\t]+/g, ' ')
+    .replace(/\s{2,}/g, ' ')
+    .replace(/^[\s\-–—|:,]+|[\s\-–—|:,]+$/g, '')
+    .trim();
+  if (!cleaned) return null;
+  // Split on separators commonly used in e-commerce titles
+  const mainPart = cleaned.split(/\s*[-–—|]\s*/)[0].trim();
+  const words = mainPart.split(/\s+/).slice(0, maxWords);
+  return words.join(' ');
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -90,42 +104,41 @@ Deno.serve(async (req) => {
       return null;
     };
 
-    // Title
+    // ─── Title ───
     let title = extractMeta('og:title', 'title');
     if (!title) {
       const titleTag = html.match(/<title[^>]*>([^<]+)<\/title>/i);
       if (titleTag?.[1]) title = decodeEntities(titleTag[1].trim());
     }
+    // Truncate to max 4 words
+    title = truncateTitle(title);
 
-    // Description
+    // ─── Description ───
     const description = extractMeta('og:description', 'description');
 
-    // Image - enhanced extraction with multiple fallbacks
-    let image = extractMeta('og:image', 'image');
-    
-    if (!image) {
-      image = extractMeta('twitter:image');
-    }
-    if (!image) {
-      image = extractMeta('twitter:image:src');
-    }
+    // ─── Image (enhanced multi-site extraction) ───
+    let image: string | null = null;
 
-    // Try itemprop="image" (used by many e-commerce sites)
+    // 1. Standard OG / Twitter
+    image = extractMeta('og:image', 'image');
+    if (!image) image = extractMeta('twitter:image');
+    if (!image) image = extractMeta('twitter:image:src');
+
+    // 2. itemprop="image"
     if (!image) {
       const itempropImg = html.match(/<(?:img|meta)[^>]*itemprop=["']image["'][^>]*(?:content|src)=["']([^"']+)["']/i)
         || html.match(/<(?:img|meta)[^>]*(?:content|src)=["']([^"']+)["'][^>]*itemprop=["']image["']/i);
       if (itempropImg?.[1]) image = itempropImg[1];
     }
 
-    // Try JSON-LD for image
+    // 3. JSON-LD
     if (!image) {
-      const jsonLdMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
-      if (jsonLdMatch) {
-        for (const block of jsonLdMatch) {
+      const jsonLdBlocks = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+      if (jsonLdBlocks) {
+        for (const block of jsonLdBlocks) {
           const jsonStr = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
           try {
             const ld = JSON.parse(jsonStr);
-            // Handle @graph structure
             const items = ld['@graph'] || [ld];
             for (const item of (Array.isArray(items) ? items : [items])) {
               if (item.image) {
@@ -141,26 +154,46 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Shein-specific: look for data-src in gallery images
+    // 4. Shein: data-src on product/gallery images, or crop_image_url in inline scripts
     if (!image) {
-      const dataSrcMatch = html.match(/<img[^>]*(?:class=["'][^"']*(?:product|gallery|goods)[^"']*["'][^>]*)?data-src=["']([^"']+(?:\.(?:jpg|jpeg|png|webp))[^"']*)["']/i);
+      const sheinScript = html.match(/crop_image_url["']?\s*[:=]\s*["']([^"']+)["']/i);
+      if (sheinScript?.[1]) image = sheinScript[1];
+    }
+    if (!image) {
+      const dataSrcMatch = html.match(/<img[^>]*(?:class=["'][^"']*(?:product|gallery|goods|main|zoom|hero)[^"']*["'][^>]*)?data-src=["']([^"']+(?:\.(?:jpg|jpeg|png|webp))[^"']*)["']/i);
       if (dataSrcMatch?.[1]) image = dataSrcMatch[1];
     }
 
-    // Mercado Livre specific: look for figure/img patterns
+    // 5. Amazon: specific patterns (landingImage, imgTagWrapperId, data-old-hires)
+    if (!image) {
+      const amzHires = html.match(/data-old-hires=["']([^"']+)["']/i);
+      if (amzHires?.[1]) image = amzHires[1];
+    }
+    if (!image) {
+      const amzLanding = html.match(/["']hiRes["']\s*:\s*["']([^"']+)["']/i)
+        || html.match(/["']large["']\s*:\s*["']([^"']+)["']/i);
+      if (amzLanding?.[1]) image = amzLanding[1];
+    }
+
+    // 6. Shopee: product images in __NEXT_DATA__ or ssrProps
+    if (!image) {
+      const shopeeMatch = html.match(/"image"\s*:\s*"(https?:\/\/[^"]+(?:\.(?:jpg|jpeg|png|webp))[^"]*)"/i);
+      if (shopeeMatch?.[1]) image = shopeeMatch[1];
+    }
+
+    // 7. Mercado Livre: figure/img patterns
     if (!image) {
       const mlMatch = html.match(/<figure[^>]*>[\s\S]*?<img[^>]*src=["']([^"']+(?:\.(?:jpg|jpeg|png|webp))[^"']*)["']/i);
       if (mlMatch?.[1]) image = mlMatch[1];
     }
 
-    // Generic: first large product-like image
+    // 8. Generic fallback: first valid product-like image
     if (!image) {
       const imgMatches = html.matchAll(/<img[^>]*src=["']([^"']+)["'][^>]*>/gi);
       for (const match of imgMatches) {
         const src = match[1];
         if (!src) continue;
-        // Skip tiny images, icons, tracking pixels, svgs, base64
-        if (src.includes('data:') || src.includes('.svg') || src.includes('pixel') || src.includes('tracking') || src.includes('spacer') || src.includes('logo') || src.includes('icon') || src.length < 20) continue;
+        if (src.includes('data:') || src.includes('.svg') || src.includes('pixel') || src.includes('tracking') || src.includes('spacer') || src.includes('logo') || src.includes('icon') || src.includes('avatar') || src.includes('badge') || src.length < 20) continue;
         if (/\.(jpg|jpeg|png|webp)/i.test(src)) {
           image = src;
           break;
@@ -168,26 +201,27 @@ Deno.serve(async (req) => {
       }
     }
 
-    // Make relative URLs absolute
-    if (image && !image.startsWith('http')) {
-      try {
-        const baseUrl = new URL(url);
-        image = new URL(image, baseUrl.origin).href;
-      } catch { /* ignore */ }
+    // Normalize URL
+    if (image) {
+      if (image.startsWith('//')) {
+        image = 'https:' + image;
+      } else if (!image.startsWith('http')) {
+        try {
+          const baseUrl = new URL(url);
+          image = new URL(image, baseUrl.origin).href;
+        } catch { /* ignore */ }
+      }
+      // Remove Shopee/Shein thumbnail suffixes to get full-size image
+      image = image.replace(/_tn\b/g, '');
     }
 
-    // Clean up protocol-relative URLs
-    if (image && image.startsWith('//')) {
-      image = 'https:' + image;
-    }
-
-    // Price
+    // ─── Price ───
     let price = extractMeta('product:price:amount');
     if (!price) price = extractMeta('og:price:amount');
     if (!price) {
-      const jsonLdMatch = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
-      if (jsonLdMatch) {
-        for (const block of jsonLdMatch) {
+      const jsonLdBlocks = html.match(/<script[^>]*type=["']application\/ld\+json["'][^>]*>([\s\S]*?)<\/script>/gi);
+      if (jsonLdBlocks) {
+        for (const block of jsonLdBlocks) {
           const jsonStr = block.replace(/<script[^>]*>/i, '').replace(/<\/script>/i, '');
           try {
             const ld = JSON.parse(jsonStr);
