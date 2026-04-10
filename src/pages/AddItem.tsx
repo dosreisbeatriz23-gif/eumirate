@@ -260,6 +260,18 @@ const AddItem = () => {
           />
         </div>
 
+        {/* Price Range */}
+        <div>
+          <label className="text-sm font-medium text-foreground mb-1.5 block">Faixa de preço</label>
+          <Input
+            placeholder="R$ 100 - 200"
+            value={priceRange}
+            onChange={(e) => setPriceRange(e.target.value)}
+            maxLength={50}
+            className="h-11 rounded-xl"
+          />
+        </div>
+
 
 
 
@@ -324,16 +336,6 @@ const AddItem = () => {
                 value={imageUrl}
                 onChange={(e) => setImageUrl(e.target.value)}
                 maxLength={500}
-                className="h-11 rounded-xl"
-              />
-            </div>
-            <div>
-              <label className="text-sm font-medium text-foreground mb-1.5 block">Faixa de preço</label>
-              <Input
-                placeholder="R$ 100 - 200"
-                value={priceRange}
-                onChange={(e) => setPriceRange(e.target.value)}
-                maxLength={50}
                 className="h-11 rounded-xl"
               />
             </div>
