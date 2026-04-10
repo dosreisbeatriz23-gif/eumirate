@@ -160,6 +160,14 @@ const GroupDetail = () => {
           {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
           <span className="hidden sm:inline">{copied ? "Copiado!" : "Convidar"}</span>
         </Button>
+        <Button
+          size="sm"
+          className="rounded-full gap-2 shrink-0"
+          onClick={() => navigate(`/adicionar?group=${id}`)}
+        >
+          <Plus className="w-4 h-4" />
+          <span className="hidden sm:inline">Adicionar item</span>
+        </Button>
       </div>
 
       {/* Members badge */}
@@ -292,6 +300,11 @@ const GroupDetail = () => {
                   <span className="inline-block text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
                     {item.price_range}
                   </span>
+                )}
+                {item.author_name && (
+                  <p className="text-[11px] text-muted-foreground/70 truncate">
+                    Adicionado por {item.author_name}
+                  </p>
                 )}
                 {item.external_link && (
                   <div className="pt-1">
