@@ -225,7 +225,7 @@ const AddItem = () => {
 
       {/* Title */}
       <div className="text-center mb-8">
-        <h2 className="text-2xl md:text-3xl font-serif font-medium text-foreground">
+        <h2 className="text-2xl md:text-3xl title-gliker">
           Adicionar Item
         </h2>
         <p className="text-sm text-muted-foreground mt-1">

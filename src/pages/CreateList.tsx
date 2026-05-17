@@ -46,7 +46,7 @@ const CreateList = () => {
   return (
     <div>
       <div className="container mx-auto px-4 md:px-6 py-8 md:py-10 max-w-lg">
-        <h2 className="text-3xl font-serif font-medium text-foreground mb-8">
+        <h2 className="text-3xl title-gliker mb-8">
           Criar Nova Lista
         </h2>
 

@@ -162,7 +162,7 @@ const MeusDesejos = () => {
     <div className="page-enter">
       <div className="container mx-auto px-4 md:px-8 py-8 md:py-12 max-w-6xl space-y-12">
         <div>
-          <h2 className="text-3xl sm:text-4xl font-serif text-foreground tracking-tight">Minhas Listas</h2>
+          <h2 className="text-3xl sm:text-4xl title-gliker tracking-tight">Minhas Listas</h2>
           <p className="text-sm text-muted-foreground mt-1.5">Organize seus desejos em listas privadas e públicas</p>
         </div>
 
