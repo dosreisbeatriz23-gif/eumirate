@@ -299,10 +299,15 @@ const GroupDetail = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredItems.map((item) => (
+          {filteredItems.map((item) => {
+            const isOwner = item.owner_user_id === userId;
+            const canReserve = !isOwner && !item.is_reserved;
+            return (
             <Card
               key={item.id}
-              className="group relative rounded-2xl overflow-hidden border-border/50 hover:border-primary/20 transition-all cursor-pointer"
+              className={`group relative rounded-2xl overflow-hidden border-border/50 transition-all cursor-pointer ${
+                item.is_reserved ? "bg-muted/20 opacity-90" : "hover:border-primary/20"
+              }`}
               onClick={() => navigate(`/item/${item.id}`)}
             >
               {item.image_url ? (
@@ -340,6 +345,15 @@ const GroupDetail = () => {
                     Adicionado por {item.author_name}
                   </p>
                 )}
+                {item.is_reserved ? (
+                  <div className="text-xs text-primary bg-primary/5 border border-primary/15 px-3 py-2 rounded-xl">
+                    Este item foi reservado.
+                  </div>
+                ) : !isOwner ? (
+                  <div className="text-xs text-muted-foreground bg-muted/40 border border-border/40 px-3 py-2 rounded-xl">
+                    Disponível para reserva
+                  </div>
+                ) : null}
                 {item.external_link && (
                   <div className="pt-1">
                     <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
@@ -350,9 +364,23 @@ const GroupDetail = () => {
                     </Button>
                   </div>
                 )}
+                {canReserve && (
+                  <Button
+                    size="sm"
+                    className="w-full rounded-full h-9 mt-1"
+                    disabled={reserveMutation.isPending}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      reserveMutation.mutate(item.id);
+                    }}
+                  >
+                    Reservar Presente
+                  </Button>
+                )}
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
