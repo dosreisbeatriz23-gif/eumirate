@@ -16,7 +16,9 @@ const ItemDetail = () => {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
   const [showDelete, setShowDelete] = useState(false);
+  const [showReserve, setShowReserve] = useState(false);
 
   const deleteMutation = useMutation({
     mutationFn: async () => {
