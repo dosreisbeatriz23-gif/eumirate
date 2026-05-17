@@ -47,7 +47,7 @@ const Dashboard = () => {
       <div className="container mx-auto px-4 md:px-6 py-8 md:py-10 max-w-5xl">
         <div className="flex items-center justify-between mb-10">
           <div>
-            <h2 className="text-3xl sm:text-4xl font-serif font-medium text-foreground mb-1">
+            <h2 className="text-3xl sm:text-4xl title-gliker mb-1">
               Minhas Listas
             </h2>
             <p className="text-muted-foreground">
