@@ -76,9 +76,9 @@ const AppLayout = () => {
         <div className="px-5 h-12 flex items-center">
           <button
             onClick={() => navigate("/dashboard")}
-            className="text-lg font-serif tracking-tight text-primary-foreground/90"
+            className="text-lg font-gliker tracking-tight text-primary-foreground/90"
           >
-            EUMIRATE
+            eumirate
           </button>
         </div>
       </header>
