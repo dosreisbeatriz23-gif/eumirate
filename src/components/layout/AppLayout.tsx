@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 const desktopLinks = [
   { label: "Home", path: "/home" },
   { label: "Minhas Listas", path: "/meus-desejos" },
+  { label: "Presentes", path: "/presentes" },
   { label: "Grupos", path: "/grupos" },
   { label: "Perfil", path: "/perfil" },
 ];
@@ -14,6 +15,7 @@ const mobileTabs = [
   { label: "Home", icon: Home, path: "/home" },
   { label: "Listas", icon: List, path: "/meus-desejos" },
   { label: "Adicionar", icon: PlusCircle, path: "/adicionar" },
+  { label: "Presentes", icon: Gift, path: "/presentes" },
   { label: "Grupos", icon: Users, path: "/grupos" },
   { label: "Perfil", icon: User, path: "/perfil" },
 ];
