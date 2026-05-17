@@ -26,6 +26,8 @@ const GroupMembers = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [membershipChecked, setMembershipChecked] = useState(false);
   const [isMember, setIsMember] = useState(false);
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
 
@@ -82,9 +84,13 @@ const GroupMembers = () => {
   });
 
   useEffect(() => {
+    let cancelled = false;
     const checkMembership = async () => {
       if (!user || !id) {
-        setIsMember(false);
+        if (!cancelled) {
+          setIsMember(false);
+          setMembershipChecked(true);
+        }
         return;
       }
       const { data } = await supabase
@@ -93,16 +99,34 @@ const GroupMembers = () => {
         .eq("group_id", id)
         .eq("user_id", user.id)
         .maybeSingle();
-      setIsMember(!!data);
+      if (!cancelled) {
+        setIsMember(!!data);
+        setMembershipChecked(true);
+      }
     };
     checkMembership();
+    return () => { cancelled = true; };
   }, [user, id]);
 
   useEffect(() => {
-    if (!isMember && !isLoading && user && id) {
+    if (membershipChecked && !isMember && user && id) {
       navigate("/grupos");
     }
-  }, [isMember, isLoading, user, id, navigate]);
+  }, [membershipChecked, isMember, user, id, navigate]);
+
+  // Realtime: refetch members when group_members changes
+  useEffect(() => {
+    if (!id || !isMember) return;
+    const channel = supabase
+      .channel(`group-members-realtime-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "group_members", filter: `group_id=eq.${id}` },
+        () => queryClient.invalidateQueries({ queryKey: ["group-members-detailed", id] })
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id, isMember, queryClient]);
 
   const visibleMembers = members.slice(0, displayCount);
   const hasMore = displayCount < members.length;
