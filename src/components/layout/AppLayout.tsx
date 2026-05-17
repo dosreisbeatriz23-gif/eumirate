@@ -5,8 +5,7 @@ import { cn } from "@/lib/utils";
 
 const desktopLinks = [
   { label: "Home", path: "/home" },
-  { label: "Criar Lista", path: "/criar-lista" },
-  { label: "Minhas Listas", path: "/dashboard" },
+  { label: "Minhas Listas", path: "/meus-desejos" },
   { label: "Grupos", path: "/grupos" },
   { label: "Perfil", path: "/perfil" },
 ];
