@@ -10,7 +10,6 @@ import Login from "./pages/Login";
 import AppLayout from "./components/layout/AppLayout";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
-import CreateList from "./pages/CreateList";
 import ListDetail from "./pages/ListDetail";
 import AddItem from "./pages/AddItem";
 import MeusDesejos from "./pages/MeusDesejos";
@@ -39,8 +38,7 @@ const App = () => (
             {/* App pages with shared layout */}
             <Route element={<AppLayout />}>
               <Route path="/home" element={<Home />} />
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/criar-lista" element={<CreateList />} />
+              <Route path="/dashboard" element={<MeusDesejos />} />
               <Route path="/lista/:id" element={<ListDetail />} />
               <Route path="/lista/:id/adicionar" element={<AddItem />} />
               <Route path="/adicionar" element={<AddItem />} />
