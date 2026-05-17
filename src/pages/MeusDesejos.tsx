@@ -204,7 +204,6 @@ const MeusDesejos = () => {
             title="Ideias de Presentes"
             subtitle="Membros dos seus grupos podem visualizar"
             accent="bg-primary/10 text-primary"
-            onAdd={() => openCreateWith("public")}
           />
           {publicLists.length === 0 ? (
             <EmptyState icon={Globe} text="Nenhuma lista pública criada ainda" onAction={() => openCreateWith("public")} actionText="Criar lista para amigos" />
