@@ -268,7 +268,7 @@ const GroupDetail = () => {
           {filteredItems.map((item) => (
             <Card
               key={item.id}
-              className="group rounded-2xl overflow-hidden border-border/50 hover:border-primary/20 transition-all cursor-pointer"
+              className="group relative rounded-2xl overflow-hidden border-border/50 hover:border-primary/20 transition-all cursor-pointer"
               onClick={() => navigate(`/item/${item.id}`)}
             >
               {item.image_url ? (
@@ -276,7 +276,7 @@ const GroupDetail = () => {
                   <img
                     src={item.image_url}
                     alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${item.is_reserved ? "grayscale-[40%] opacity-80" : ""}`}
                     loading="lazy"
                   />
                 </div>
@@ -287,8 +287,8 @@ const GroupDetail = () => {
               )}
 
               {item.is_reserved && (
-                <div className="absolute top-3 right-3 bg-primary/90 text-primary-foreground text-xs px-2.5 py-1 rounded-full">
-                  Reservado
+                <div className="absolute top-3 right-3 bg-primary text-primary-foreground text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-full shadow-medium">
+                  RESERVADO
                 </div>
               )}
 
