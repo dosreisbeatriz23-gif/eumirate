@@ -231,7 +231,7 @@ const ItemDetail = () => {
               </Button>
             )}
 
-            {!isOwner && listIsPublic && item.is_reserved && (
+            {!isOwner && itemIsShared && item.is_reserved && (
               <Button disabled className="w-full h-12 rounded-2xl gap-2.5 text-[15px] font-medium">
                 Já reservado
               </Button>
