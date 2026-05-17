@@ -5,7 +5,9 @@ import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ArrowLeft, Users } from "lucide-react";
+import { ArrowLeft, Users, ChevronDown } from "lucide-react";
+
+const PAGE_SIZE = 10;
 
 interface MemberProfile {
   user_id: string;
@@ -25,6 +27,7 @@ const GroupMembers = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isMember, setIsMember] = useState(false);
+  const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
 
   const { data: group } = useQuery({
     queryKey: ["group", id],
@@ -45,7 +48,6 @@ const GroupMembers = () => {
     queryFn: async () => {
       if (!id) return [];
 
-      // Buscar membros do grupo com perfis
       const { data: memberData, error: memberError } = await supabase
         .from("group_members")
         .select("user_id, joined_at, role")
@@ -57,7 +59,6 @@ const GroupMembers = () => {
 
       const userIds = memberData.map((m) => m.user_id);
 
-      // Buscar perfis dos membros
       const { data: profiles, error: profileError } = await supabase
         .from("profiles")
         .select("user_id, display_name, avatar_url")
@@ -80,7 +81,6 @@ const GroupMembers = () => {
     enabled: !!id && isMember,
   });
 
-  // Verificar se usuário atual é membro do grupo
   useEffect(() => {
     const checkMembership = async () => {
       if (!user || !id) {
@@ -98,12 +98,18 @@ const GroupMembers = () => {
     checkMembership();
   }, [user, id]);
 
-  // Redirecionar se não for membro
   useEffect(() => {
     if (!isMember && !isLoading && user && id) {
       navigate("/grupos");
     }
   }, [isMember, isLoading, user, id, navigate]);
+
+  const visibleMembers = members.slice(0, displayCount);
+  const hasMore = displayCount < members.length;
+
+  const handleLoadMore = () => {
+    setDisplayCount((prev) => prev + PAGE_SIZE);
+  };
 
   const getInitials = (name: string | null) => {
     if (!name) return "?";
@@ -147,6 +153,11 @@ const GroupMembers = () => {
         <span>
           {members.length} {members.length === 1 ? "membro" : "membros"}
         </span>
+        {members.length > 0 && (
+          <span className="text-muted-foreground/60">
+            &middot; Mostrando {visibleMembers.length} de {members.length}
+          </span>
+        )}
       </div>
 
       {/* Members list */}
@@ -162,44 +173,59 @@ const GroupMembers = () => {
           <p className="text-muted-foreground text-sm">Nenhum membro encontrado</p>
         </div>
       ) : (
-        <div className="space-y-3">
-          {members.map((member) => (
-            <div
-              key={member.user_id}
-              className="flex items-center gap-4 p-4 rounded-2xl border border-border/50 bg-card hover:border-primary/20 transition-all"
-            >
-              <Avatar className="w-12 h-12 shrink-0">
-                <AvatarImage
-                  src={member.profile?.avatar_url || undefined}
-                  alt={getDisplayName(member)}
-                />
-                <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
-                  {getInitials(getDisplayName(member))}
-                </AvatarFallback>
-              </Avatar>
-              <div className="flex-1 min-w-0">
-                <p className="font-medium text-foreground text-sm truncate">
-                  {getDisplayName(member)}
-                </p>
-                {member.role === "owner" && (
-                  <span className="inline-block text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium tracking-wider">
-                    ADMIN
-                  </span>
-                )}
-                {member.role === "member" && (
-                  <span className="text-[11px] text-muted-foreground/70">
-                    Membro
+        <>
+          <div className="space-y-3">
+            {visibleMembers.map((member) => (
+              <div
+                key={member.user_id}
+                className="flex items-center gap-4 p-4 rounded-2xl border border-border/50 bg-card hover:border-primary/20 transition-all"
+              >
+                <Avatar className="w-12 h-12 shrink-0">
+                  <AvatarImage
+                    src={member.profile?.avatar_url || undefined}
+                    alt={getDisplayName(member)}
+                  />
+                  <AvatarFallback className="bg-primary/10 text-primary text-sm font-medium">
+                    {getInitials(getDisplayName(member))}
+                  </AvatarFallback>
+                </Avatar>
+                <div className="flex-1 min-w-0">
+                  <p className="font-medium text-foreground text-sm truncate">
+                    {getDisplayName(member)}
+                  </p>
+                  {member.role === "owner" && (
+                    <span className="inline-block text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium tracking-wider">
+                      ADMIN
+                    </span>
+                  )}
+                  {member.role === "member" && (
+                    <span className="text-[11px] text-muted-foreground/70">
+                      Membro
+                    </span>
+                  )}
+                </div>
+                {member.user_id === user?.id && (
+                  <span className="text-[11px] text-muted-foreground/60 shrink-0">
+                    Você
                   </span>
                 )}
               </div>
-              {member.user_id === user?.id && (
-                <span className="text-[11px] text-muted-foreground/60 shrink-0">
-                  Você
-                </span>
-              )}
+            ))}
+          </div>
+
+          {hasMore && (
+            <div className="flex justify-center pt-4">
+              <Button
+                variant="outline"
+                onClick={handleLoadMore}
+                className="rounded-full px-6 gap-2 border-primary/30 text-primary hover:bg-primary/5 hover:text-primary hover:border-primary/50 transition-all"
+              >
+                <ChevronDown className="w-4 h-4" />
+                Carregar mais
+              </Button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
     </div>
   );
