@@ -9,7 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { Users, Heart, Home, Plus, Copy, Check, Crown, UserPlus } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Users, Heart, Home, Plus, Copy, Check, Crown, UserPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const defaultSuggestions = [
@@ -28,6 +32,7 @@ const Grupos = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
 
   const { data: groups = [], isLoading } = useQuery({
     queryKey: ["groups", userId],
@@ -60,6 +65,19 @@ const Grupos = () => {
       toast.success("Grupo criado com sucesso!");
     },
     onError: () => toast.error("Erro ao criar grupo"),
+  });
+
+  const deleteGroup = useMutation({
+    mutationFn: async (groupId: string) => {
+      const { error } = await supabase.from("groups").delete().eq("id", groupId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups", userId] });
+      setGroupToDelete(null);
+      toast.success("Grupo excluído com sucesso!");
+    },
+    onError: () => toast.error("Erro ao excluir grupo"),
   });
 
   const handleQuickCreate = (groupName: string) => { setName(groupName); setShowCreate(true); };
@@ -151,11 +169,42 @@ const Grupos = () => {
                   {copiedId === group.id ? <Check className="w-3.5 h-3.5 text-primary" /> : <UserPlus className="w-3.5 h-3.5" />}
                   <span>{copiedId === group.id ? "Copiado!" : "Convidar"}</span>
                 </Button>
+                {group.owner_id === userId && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                    onClick={(e) => { e.stopPropagation(); setGroupToDelete(group.id); }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
             );
           })}
         </div>
       )}
+
+      <AlertDialog open={!!groupToDelete} onOpenChange={() => setGroupToDelete(null)}>
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-serif">Excluir grupo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este grupo? Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => groupToDelete && deleteGroup.mutate(groupToDelete)}
+              disabled={deleteGroup.isPending}
+            >
+              {deleteGroup.isPending ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="sm:max-w-md rounded-2xl">
