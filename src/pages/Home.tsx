@@ -36,7 +36,7 @@ const Home = () => {
       {/* Header */}
       <div className="flex items-end justify-between mb-10">
         <div>
-          <h1 className="whitespace-nowrap text-2xl sm:text-4xl font-serif text-foreground tracking-tight">
+          <h1 className="whitespace-nowrap text-2xl sm:text-4xl title-gliker tracking-tight">
             Mural de Inspiração
           </h1>
           <p className="text-sm font-medium tracking-widest uppercase mt-2 flex items-center gap-2">
