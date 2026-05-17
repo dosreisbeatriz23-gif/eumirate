@@ -38,8 +38,25 @@ const ItemDetail = () => {
     queryKey: ["item-detail", id],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("wishlist_items").select("*").eq("id", id!).single();
+        .from("wishlist_items")
+        .select("*, wishlists!inner(user_id, title, visibility)")
+        .eq("id", id!).single();
       if (error) throw error;
+      return data;
+    },
+    enabled: !!id,
+  });
+
+  // Reservation visible to: the reserver (their own) OR list owner (if not surprise).
+  // RLS already filters; we just fetch whatever the user is allowed to see.
+  const { data: reservation } = useQuery({
+    queryKey: ["item-reservation", id],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from("reservations")
+        .select("id, visitor_name, message, expected_delivery_date, is_surprise, reserver_user_id")
+        .eq("wishlist_item_id", id!)
+        .maybeSingle();
       return data;
     },
     enabled: !!id,
