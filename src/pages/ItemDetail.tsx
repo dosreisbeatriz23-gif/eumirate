@@ -91,6 +91,11 @@ const ItemDetail = () => {
   }
 
   const isPrivate = item.visibility === "private";
+  const ownerId = (item as any).wishlists?.user_id;
+  const listIsPublic = (item as any).wishlists?.visibility === "public";
+  const isOwner = ownerId === user?.id;
+  const isReserver = reservation?.reserver_user_id === user?.id;
+  const canReserve = listIsPublic && !isOwner && !item.is_reserved;
 
   return (
     <div className="min-h-screen bg-background flex flex-col page-enter">
@@ -106,13 +111,9 @@ const ItemDetail = () => {
       <div className="flex-1 flex flex-col items-center w-full">
         {/* Image section */}
         <div className="w-full max-w-lg px-5 pt-16 pb-2">
-          <div className="w-full aspect-square rounded-2xl overflow-hidden bg-muted/10 border border-border/20 shadow-card">
+          <div className={`w-full aspect-square rounded-2xl overflow-hidden bg-muted/10 border border-border/20 shadow-card ${item.is_reserved ? "grayscale-[30%]" : ""}`}>
             {item.image_url ? (
-              <img
-                src={item.image_url}
-                alt={item.name}
-                className="w-full h-full object-cover"
-              />
+              <img src={item.image_url} alt={item.name} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
                 <Gift className="w-16 h-16 text-muted-foreground/15" />
@@ -123,12 +124,10 @@ const ItemDetail = () => {
 
         {/* Details section */}
         <div className="w-full max-w-lg px-5 py-6 space-y-5">
-          {/* Name */}
           <h1 className="text-xl sm:text-2xl font-serif text-foreground leading-snug">
             {item.name}
           </h1>
 
-          {/* Price + visibility */}
           <div className="flex items-center gap-3 flex-wrap">
             {item.price_range && (
               <span className="text-lg font-semibold text-foreground tracking-tight">
@@ -137,46 +136,121 @@ const ItemDetail = () => {
             )}
             <span
               className={`inline-flex items-center gap-1.5 text-[11px] font-medium px-3 py-1.5 rounded-full ${
-                isPrivate
-                  ? "bg-muted/50 text-muted-foreground"
-                  : "bg-primary/10 text-primary"
+                isPrivate ? "bg-muted/50 text-muted-foreground" : "bg-primary/10 text-primary"
               }`}
             >
               {isPrivate ? <Lock className="w-3 h-3" /> : <Users className="w-3 h-3" />}
               {isPrivate ? "Privado" : "Público"}
             </span>
+            {item.is_reserved && (
+              <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold uppercase tracking-wider px-3 py-1.5 rounded-full bg-secondary text-secondary-foreground border border-border/40">
+                <Gift className="w-3 h-3" /> Reservado
+              </span>
+            )}
           </div>
 
-          {/* Reserved banner */}
+          {/* Reservation details (owner non-surprise, or reserver themself) */}
           {item.is_reserved && (
-            <div className="flex items-center gap-2.5 text-sm text-secondary-foreground bg-secondary/50 px-4 py-3 rounded-2xl">
-              <Gift className="w-4 h-4 shrink-0" />
-              Este item já foi reservado
+            <div className="rounded-2xl border border-border/40 bg-card p-4 space-y-2.5">
+              {isOwner && reservation && !reservation.is_surprise && (
+                <>
+                  <p className="text-sm font-medium text-foreground">Reservado por {reservation.visitor_name || "alguém"}</p>
+                  {reservation.message && (
+                    <p className="text-sm text-muted-foreground italic">"{reservation.message}"</p>
+                  )}
+                  {reservation.expected_delivery_date && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5" />
+                      Entrega prevista: {new Date(reservation.expected_delivery_date).toLocaleDateString("pt-BR")}
+                    </p>
+                  )}
+                </>
+              )}
+              {isOwner && (!reservation || reservation.is_surprise) && (
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <EyeOff className="w-4 h-4" />
+                  Este item foi reservado.
+                </p>
+              )}
+              {isReserver && reservation && (
+                <>
+                  <p className="text-sm font-medium text-foreground">Você reservou este presente</p>
+                  {reservation.expected_delivery_date && (
+                    <p className="text-xs text-muted-foreground flex items-center gap-1.5">
+                      <Calendar className="w-3.5 h-3.5" />
+                      {new Date(reservation.expected_delivery_date).toLocaleDateString("pt-BR")}
+                    </p>
+                  )}
+                  <div className="flex gap-2 pt-1">
+                    <Button variant="outline" size="sm" className="rounded-full text-xs" onClick={() => setShowReserve(true)}>
+                      Editar reserva
+                    </Button>
+                    <Button
+                      variant="ghost" size="sm"
+                      className="rounded-full text-xs text-destructive hover:text-destructive hover:bg-destructive/5"
+                      onClick={async () => {
+                        const { error } = await supabase.from("reservations").delete().eq("id", reservation.id);
+                        if (error) toast.error("Erro ao cancelar"); else {
+                          toast.success("Reserva cancelada");
+                          queryClient.invalidateQueries({ queryKey: ["item-reservation", id] });
+                          queryClient.invalidateQueries({ queryKey: ["item-detail", id] });
+                        }
+                      }}
+                    >
+                      Cancelar reserva
+                    </Button>
+                  </div>
+                </>
+              )}
+              {!isOwner && !isReserver && (
+                <p className="text-sm text-muted-foreground flex items-center gap-2">
+                  <Gift className="w-4 h-4" /> Este item já foi reservado
+                </p>
+              )}
             </div>
           )}
 
-          {/* Actions */}
           <div className="space-y-3 pt-1">
+            {canReserve && (
+              <Button
+                onClick={() => setShowReserve(true)}
+                className="w-full h-12 rounded-2xl gap-2.5 text-[15px] font-medium shadow-card hover:shadow-medium transition-all duration-300"
+              >
+                <Gift className="w-4 h-4" />
+                Reservar Presente
+              </Button>
+            )}
+
             {item.external_link && (
               <a href={item.external_link} target="_blank" rel="noopener noreferrer" className="block">
-                <Button className="w-full h-12 rounded-2xl gap-2.5 text-[15px] font-medium shadow-card hover:shadow-medium transition-all duration-300">
+                <Button variant={canReserve ? "outline" : "default"} className="w-full h-12 rounded-2xl gap-2.5 text-[15px] font-medium shadow-card hover:shadow-medium transition-all duration-300">
                   <ExternalLink className="w-4 h-4" />
                   Ver na loja
                 </Button>
               </a>
             )}
 
-            <Button
-              variant="ghost"
-              className="w-full h-11 rounded-2xl gap-2 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all duration-300"
-              onClick={() => setShowDelete(true)}
-            >
-              <Trash2 className="w-4 h-4" />
-              Remover item
-            </Button>
+            {isOwner && (
+              <Button
+                variant="ghost"
+                className="w-full h-11 rounded-2xl gap-2 text-sm text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-all duration-300"
+                onClick={() => setShowDelete(true)}
+              >
+                <Trash2 className="w-4 h-4" />
+                Remover item
+              </Button>
+            )}
           </div>
         </div>
       </div>
+
+      <ReserveGiftDialog
+        open={showReserve}
+        onOpenChange={setShowReserve}
+        itemId={item.id}
+        itemName={item.name}
+        reservation={isReserver ? (reservation as any) : null}
+      />
 
       <AlertDialog open={showDelete} onOpenChange={setShowDelete}>
         <AlertDialogContent className="rounded-2xl">
