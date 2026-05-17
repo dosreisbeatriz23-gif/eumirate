@@ -13,7 +13,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Users, Heart, Home, Plus, Copy, Check, Crown, UserPlus, Trash2 } from "lucide-react";
+import { Users, Heart, Home, Plus, Copy, Check, Crown, UserPlus, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 const defaultSuggestions = [
