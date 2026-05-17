@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,7 @@ const GroupDetail = () => {
   useEffect(() => {
     const channel = supabase
       .channel(`group-items-${id}`)
-      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "wishlist_items" },
+      .on("postgres_changes", { event: "*", schema: "public", table: "wishlist_items" },
         () => queryClient.invalidateQueries({ queryKey: ["group-items", id] }))
       .subscribe();
     return () => { supabase.removeChannel(channel); };
@@ -93,7 +93,8 @@ const GroupDetail = () => {
       const { data: wishlists, error: wErr } = await supabase
         .from("wishlists")
         .select("id, user_id")
-        .in("user_id", memberIds);
+        .in("user_id", memberIds)
+        .in("visibility", ["public", "group"]);
       if (wErr) throw wErr;
 
       const wishlistIds = wishlists?.map((w) => w.id) || [];
@@ -124,10 +125,30 @@ const GroupDetail = () => {
       // Attach author name to each item
       return (data || []).map((item) => ({
         ...item,
+        owner_user_id: wlUserMap[item.wishlist_id],
         author_name: profileMap[wlUserMap[item.wishlist_id]] || "Membro",
       }));
     },
     enabled: memberIds.length > 0,
+  });
+
+  const reserveMutation = useMutation({
+    mutationFn: async (itemId: string) => {
+      const { error } = await supabase.rpc("reserve_gift", {
+        p_item_id: itemId,
+        p_message: null,
+        p_expected_delivery_date: null,
+        p_is_surprise: true,
+        p_visitor_name: null,
+      });
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["group-items", id] });
+      queryClient.invalidateQueries({ queryKey: ["my-reservations"] });
+      toast.success("Presente reservado com sucesso!");
+    },
+    onError: (error: any) => toast.error(error?.message || "Não foi possível reservar este presente"),
   });
 
   const filter = PRICE_FILTERS[activeFilter];
@@ -278,10 +299,15 @@ const GroupDetail = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredItems.map((item) => (
+          {filteredItems.map((item) => {
+            const isOwner = item.owner_user_id === userId;
+            const canReserve = !isOwner && !item.is_reserved;
+            return (
             <Card
               key={item.id}
-              className="group relative rounded-2xl overflow-hidden border-border/50 hover:border-primary/20 transition-all cursor-pointer"
+              className={`group relative rounded-2xl overflow-hidden border-border/50 transition-all cursor-pointer ${
+                item.is_reserved ? "bg-muted/20 opacity-90" : "hover:border-primary/20"
+              }`}
               onClick={() => navigate(`/item/${item.id}`)}
             >
               {item.image_url ? (
@@ -319,6 +345,15 @@ const GroupDetail = () => {
                     Adicionado por {item.author_name}
                   </p>
                 )}
+                {item.is_reserved ? (
+                  <div className="text-xs text-primary bg-primary/5 border border-primary/15 px-3 py-2 rounded-xl">
+                    Este item foi reservado.
+                  </div>
+                ) : !isOwner ? (
+                  <div className="text-xs text-muted-foreground bg-muted/40 border border-border/40 px-3 py-2 rounded-xl">
+                    Disponível para reserva
+                  </div>
+                ) : null}
                 {item.external_link && (
                   <div className="pt-1">
                     <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
@@ -329,9 +364,23 @@ const GroupDetail = () => {
                     </Button>
                   </div>
                 )}
+                {canReserve && (
+                  <Button
+                    size="sm"
+                    className="w-full rounded-full h-9 mt-1"
+                    disabled={reserveMutation.isPending}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      reserveMutation.mutate(item.id);
+                    }}
+                  >
+                    Reservar Presente
+                  </Button>
+                )}
               </CardContent>
             </Card>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

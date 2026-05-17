@@ -55,7 +55,7 @@ const MeusDesejos = () => {
     mutationFn: async () => {
       const { error } = await supabase.from("wishlists").insert({
         user_id: userId,
-        title: newTitle.trim() || (createVisibility === "private" ? "Minha Lista Pessoal" : "Ideias de Presentes"),
+        title: newTitle.trim() || (createVisibility === "private" ? "Minha Lista Pessoal" : "Presentes Que Quero Ganhar"),
         visibility: createVisibility,
       });
       if (error) throw error;
@@ -201,7 +201,7 @@ const MeusDesejos = () => {
         <section>
           <SectionHeader
             icon={Globe}
-            title="Ideias de Presentes"
+            title="Presentes Que Quero Ganhar"
             subtitle="Membros dos seus grupos podem visualizar"
             accent="bg-primary/10 text-primary"
           />
@@ -252,7 +252,7 @@ const MeusDesejos = () => {
             </div>
 
             <Input
-              placeholder={createVisibility === "private" ? "Ex: Minha Lista Pessoal" : "Ex: Ideias de Presentes"}
+                placeholder={createVisibility === "private" ? "Ex: Minha Lista Pessoal" : "Ex: Presentes Que Quero Ganhar"}
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               maxLength={100}
