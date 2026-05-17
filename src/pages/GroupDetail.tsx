@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -15,8 +15,10 @@ import {
   Filter,
   UserPlus,
   Plus,
+  Lock,
 } from "lucide-react";
 import { toast } from "sonner";
+import { ReserveGiftDialog } from "@/components/reservations/ReserveGiftDialog";
 
 const PRICE_FILTERS = [
   { label: "Todos", min: 0, max: Infinity },
