@@ -17,6 +17,7 @@ import Grupos from "./pages/Grupos";
 import GroupDetail from "./pages/GroupDetail";
 import Perfil from "./pages/Perfil";
 import ItemDetail from "./pages/ItemDetail";
+import Presentes from "./pages/Presentes";
 import GroupInvite from "./pages/GroupInvite";
 import NotFound from "./pages/NotFound";
 
@@ -47,6 +48,7 @@ const App = () => (
               <Route path="/grupo/convite/:code" element={<GroupInvite />} />
               <Route path="/grupo/:id" element={<GroupDetail />} />
               <Route path="/item/:id" element={<ItemDetail />} />
+              <Route path="/presentes" element={<Presentes />} />
               <Route path="/perfil" element={<Perfil />} />
             </Route>
 
