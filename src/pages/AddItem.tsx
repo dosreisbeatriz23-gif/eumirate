@@ -53,19 +53,18 @@ const AddItem = () => {
     paramListId &&
     /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(paramListId);
 
-  const { data: userLists } = useQuery({
+  const { data: userLists = [] } = useQuery({
     queryKey: ["user-wishlists-for-add", userId],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wishlists")
-        .select("id, title")
+        .select("id, title, visibility")
         .eq("user_id", userId)
-        .order("created_at", { ascending: true })
-        .limit(1);
+        .order("created_at", { ascending: true });
       if (error) throw error;
       return data;
     },
-    enabled: !isValidUuid,
+    enabled: !!userId,
   });
 
   const [resolvedListId, setResolvedListId] = useState<string | null>(
@@ -75,10 +74,13 @@ const AddItem = () => {
   useEffect(() => {
     if (isValidUuid && paramListId) {
       setResolvedListId(paramListId);
-    } else if (userLists && userLists.length > 0) {
-      setResolvedListId(userLists[0].id);
+      return;
     }
-  }, [isValidUuid, paramListId, userLists]);
+
+    const targetListVisibility = groupId ? "public" : "private";
+    const preferredList = userLists.find((list) => list.visibility === targetListVisibility) ?? userLists[0];
+    if (preferredList) setResolvedListId(preferredList.id);
+  }, [groupId, isValidUuid, paramListId, userLists]);
 
   // Form state
   const [url, setUrl] = useState("");
@@ -135,12 +137,41 @@ const AddItem = () => {
     }
   }, [url]);
 
+  const ensureListForVisibility = async (targetVisibility: "private" | "public") => {
+    const existing = userLists.find((list) => list.visibility === targetVisibility);
+    if (existing) return existing.id;
+
+    const { data: newList, error: listError } = await supabase
+      .from("wishlists")
+      .insert({
+        user_id: userId,
+        title: targetVisibility === "private" ? "Minha Lista Pessoal" : "Presentes Que Quero Ganhar",
+        visibility: targetVisibility,
+      })
+      .select("id")
+      .single();
+    if (listError) throw listError;
+    return newList.id;
+  };
+
   const createListAndSave = async () => {
-    let targetListId = resolvedListId;
+    const targetListVisibility = visibility === "private" ? "private" : "public";
+    const selectedList = userLists.find((list) => list.id === resolvedListId);
+    let targetListId = selectedList?.visibility === targetListVisibility ? selectedList.id : null;
+
+    if (!targetListId) {
+      targetListId = await ensureListForVisibility(targetListVisibility);
+      setResolvedListId(targetListId);
+    }
+
     if (!targetListId) {
       const { data: newList, error: listError } = await supabase
         .from("wishlists")
-        .insert({ user_id: userId, title: "Meu Wishlist Geral" })
+        .insert({
+          user_id: userId,
+          title: targetListVisibility === "private" ? "Minha Lista Pessoal" : "Presentes Que Quero Ganhar",
+          visibility: targetListVisibility,
+        })
         .select("id")
         .single();
       if (listError) throw listError;
@@ -168,13 +199,13 @@ const AddItem = () => {
       queryClient.invalidateQueries({ queryKey: ["wishlist-items", savedListId] });
       queryClient.invalidateQueries({ queryKey: ["wishlists"] });
       queryClient.invalidateQueries({ queryKey: ["all-items-mural"] });
-      if (groupId) {
+      if (groupId && visibility !== "private") {
         queryClient.invalidateQueries({ queryKey: ["group-items"] });
         toast.success("Item adicionado ao grupo!");
         navigate(`/grupo/${groupId}`, { replace: true });
       } else {
         toast.success("Item adicionado com sucesso!");
-        navigate("/home", { replace: true });
+        navigate(`/lista/${savedListId}`, { replace: true });
       }
     },
     onError: () => toast.error("Erro ao salvar item"),
