@@ -184,14 +184,26 @@ const Grupos = () => {
                   <span>{copiedId === group.id ? "Copiado!" : "Convidar"}</span>
                 </Button>
                 {group.owner_id === userId && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="shrink-0 rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                    onClick={(e) => { e.stopPropagation(); setGroupToDelete(group.id); }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="shrink-0 rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                      onClick={(e) => { e.stopPropagation(); setGroupToEdit({ id: group.id, name: group.name }); setEditName(group.name); }}
+                      aria-label="Editar nome do grupo"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="shrink-0 rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={(e) => { e.stopPropagation(); setGroupToDelete(group.id); }}
+                      aria-label="Excluir grupo"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </>
                 )}
               </div>
             );
