@@ -9,7 +9,6 @@ import Onboarding from "./pages/Onboarding";
 import Login from "./pages/Login";
 import AppLayout from "./components/layout/AppLayout";
 import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
 import ListDetail from "./pages/ListDetail";
 import AddItem from "./pages/AddItem";
 import MeusDesejos from "./pages/MeusDesejos";
