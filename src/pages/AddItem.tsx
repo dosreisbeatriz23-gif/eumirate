@@ -94,7 +94,7 @@ const AddItem = () => {
   const [imageUrl, setImageUrl] = useState("");
   const [priceRange, setPriceRange] = useState("");
   const [description, setDescription] = useState("");
-  const [visibility, setVisibility] = useState<"private" | "group">(groupId ? "group" : "private");
+  const [visibility, setVisibility] = useState<"private" | "public">(groupId ? "public" : "private");
   const [showDetails, setShowDetails] = useState(false);
   const [showImageEdit, setShowImageEdit] = useState(false);
   const [customImageUrl, setCustomImageUrl] = useState("");
@@ -436,9 +436,9 @@ const AddItem = () => {
             </button>
             <button
               type="button"
-              onClick={() => setVisibility("group")}
+              onClick={() => setVisibility("public")}
               className={`flex items-center gap-2 rounded-xl p-3 border text-sm font-medium transition-all ${
-                visibility === "group"
+                visibility === "public"
                   ? "border-primary bg-primary/8 text-primary"
                   : "border-border bg-card text-muted-foreground hover:bg-muted/50"
               }`}
