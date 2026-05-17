@@ -47,6 +47,7 @@ const helpItems = [
 
 const Perfil = () => {
   const { user, signOut } = useAuth();
+  const navigate = useNavigate();
   const queryClient = useQueryClient();
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState("");
