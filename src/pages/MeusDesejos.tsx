@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
-import { Plus, Gift, Lock, Globe, List, Loader2, Trash2 } from "lucide-react";
+import { Plus, Gift, Lock, Globe, List, Loader2, Trash2, Check } from "lucide-react";
 import { useState } from "react";
 
 const MeusDesejos = () => {
@@ -55,7 +55,7 @@ const MeusDesejos = () => {
     mutationFn: async () => {
       const { error } = await supabase.from("wishlists").insert({
         user_id: userId,
-        title: newTitle.trim() || (createVisibility === "private" ? "Meus Desejos" : "Ideias de Presentes"),
+        title: newTitle.trim() || (createVisibility === "private" ? "Minha Lista Pessoal" : "Ideias de Presentes"),
         visibility: createVisibility,
       });
       if (error) throw error;
@@ -81,8 +81,8 @@ const MeusDesejos = () => {
     onError: () => toast.error("Erro ao remover"),
   });
 
-  const openCreate = (vis: "private" | "public") => {
-    setCreateVisibility(vis);
+  const openCreate = () => {
+    setCreateVisibility("private");
     setNewTitle("");
     setCreateOpen(true);
   };
@@ -98,14 +98,20 @@ const MeusDesejos = () => {
     );
   }
 
-  const ListCard = ({ list }: { list: typeof wishlists[0] }) => {
+  const ListCard = ({ list, isPublic }: { list: typeof wishlists[0]; isPublic: boolean }) => {
     const count = getItemCount(list.id);
     const thumb = getThumbnail(list.id);
     return (
       <div
-        className="group premium-card cursor-pointer"
+        className="group premium-card cursor-pointer relative transition-all duration-300 hover:shadow-elevated"
         onClick={() => navigate(`/lista/${list.id}`)}
       >
+        <div className={`absolute top-2 left-2 z-10 inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-medium backdrop-blur-sm ${
+          isPublic ? "bg-primary/90 text-primary-foreground" : "bg-background/90 text-foreground border border-border/50"
+        }`}>
+          {isPublic ? <Globe className="w-2.5 h-2.5" /> : <Lock className="w-2.5 h-2.5" />}
+          {isPublic ? "Pública" : "Privada"}
+        </div>
         <div className="h-32 bg-muted/20 overflow-hidden flex items-center justify-center">
           {thumb ? (
             <img src={thumb} alt={list.title} className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]" loading="lazy" />
@@ -131,26 +137,32 @@ const MeusDesejos = () => {
     );
   };
 
-  const SectionHeader = ({ icon: Icon, title, subtitle, iconClass, onAdd }: any) => (
-    <div className="flex items-center justify-between mb-5">
+  const SectionHeader = ({ icon: Icon, title, subtitle, accent, onAdd }: any) => (
+    <div className="flex items-start justify-between mb-6 pb-4 border-b border-border/30">
       <div className="flex items-center gap-3">
-        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${iconClass}`}>
-          <Icon className="w-4 h-4" />
+        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${accent}`}>
+          <Icon className="w-5 h-5" />
         </div>
         <div>
-          <h3 className="text-lg font-serif text-foreground">{title}</h3>
-          <p className="text-xs text-muted-foreground">{subtitle}</p>
+          <h3 className="text-xl sm:text-2xl font-serif text-foreground tracking-tight">{title}</h3>
+          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{subtitle}</p>
         </div>
       </div>
-      <Button variant="ghost" size="sm" className="rounded-full text-xs gap-1.5 text-muted-foreground hover:text-foreground" onClick={onAdd}>
-        <Plus className="w-3.5 h-3.5" /> Nova
+      <Button
+        variant="outline"
+        size="sm"
+        className="rounded-full text-xs gap-1.5 border-border/50 shrink-0"
+        onClick={onAdd}
+      >
+        <Plus className="w-3.5 h-3.5" />
+        <span className="hidden sm:inline">Nova lista</span>
       </Button>
     </div>
   );
 
   const EmptyState = ({ icon: Icon, text, onAction, actionText }: any) => (
-    <div className="text-center py-12 border border-dashed border-border/40 rounded-2xl">
-      <Icon className="w-10 h-10 text-muted-foreground/15 mx-auto mb-3" />
+    <div className="text-center py-14 border border-dashed border-border/40 rounded-2xl bg-muted/10">
+      <Icon className="w-10 h-10 text-muted-foreground/20 mx-auto mb-3" />
       <p className="text-sm text-muted-foreground mb-4">{text}</p>
       <Button variant="outline" size="sm" className="rounded-full text-xs border-border/40" onClick={onAction}>
         {actionText}
@@ -158,58 +170,109 @@ const MeusDesejos = () => {
     </div>
   );
 
+  const openCreateWith = (vis: "private" | "public") => {
+    setCreateVisibility(vis);
+    setNewTitle("");
+    setCreateOpen(true);
+  };
+
   return (
     <div className="page-enter">
       <div className="container mx-auto px-4 md:px-8 py-8 md:py-12 max-w-6xl space-y-12">
-        <div>
-          <h2 className="text-3xl sm:text-4xl title-gliker tracking-tight">Minhas Listas</h2>
-          <p className="text-sm text-muted-foreground mt-1.5">Organize seus desejos em listas privadas e públicas</p>
+        <div className="flex items-end justify-between gap-4 flex-wrap">
+          <div>
+            <h2 className="text-3xl sm:text-4xl title-gliker tracking-tight">Minhas Listas</h2>
+            <p className="text-sm text-muted-foreground mt-1.5">Organize seus desejos em listas privadas e públicas</p>
+          </div>
+          <Button
+            onClick={openCreate}
+            className="rounded-full gap-2 h-11 px-5 shadow-elevated"
+          >
+            <Plus className="w-4 h-4" />
+            Nova lista
+          </Button>
         </div>
 
         <section>
-          <SectionHeader icon={Lock} title="Meus Desejos" subtitle="Somente você pode ver" iconClass="bg-muted/60 text-muted-foreground" onAdd={() => openCreate("private")} />
+          <SectionHeader
+            icon={Lock}
+            title="Minha Lista Pessoal"
+            subtitle="Somente você pode visualizar"
+            accent="bg-muted/60 text-muted-foreground"
+            onAdd={() => openCreateWith("private")}
+          />
           {privateLists.length === 0 ? (
-            <EmptyState icon={Gift} text="Nenhuma lista privada" onAction={() => openCreate("private")} actionText="Criar primeira lista" />
+            <EmptyState icon={Gift} text="Você ainda não criou nenhuma lista pessoal" onAction={() => openCreateWith("private")} actionText="Criar primeira lista" />
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-              {privateLists.map((l) => <ListCard key={l.id} list={l} />)}
+              {privateLists.map((l) => <ListCard key={l.id} list={l} isPublic={false} />)}
             </div>
           )}
         </section>
 
         <section>
-          <SectionHeader icon={Globe} title="Ideias de Presentes" subtitle="Visível para amigos e grupos" iconClass="bg-primary/8 text-primary" onAdd={() => openCreate("public")} />
+          <SectionHeader
+            icon={Globe}
+            title="Ideias de Presentes"
+            subtitle="Membros dos seus grupos podem visualizar"
+            accent="bg-primary/10 text-primary"
+            onAdd={() => openCreateWith("public")}
+          />
           {publicLists.length === 0 ? (
-            <EmptyState icon={Globe} text="Nenhuma lista pública" onAction={() => openCreate("public")} actionText="Criar lista para amigos" />
+            <EmptyState icon={Globe} text="Nenhuma lista pública criada ainda" onAction={() => openCreateWith("public")} actionText="Criar lista para amigos" />
           ) : (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4 sm:gap-5">
-              {publicLists.map((l) => <ListCard key={l.id} list={l} />)}
+              {publicLists.map((l) => <ListCard key={l.id} list={l} isPublic={true} />)}
             </div>
           )}
         </section>
       </div>
 
       <Dialog open={createOpen} onOpenChange={setCreateOpen}>
-        <DialogContent className="sm:max-w-sm rounded-2xl">
+        <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
-            <DialogTitle className="font-serif">
-              {createVisibility === "private" ? "Nova Lista Privada" : "Nova Lista Pública"}
-            </DialogTitle>
+            <DialogTitle className="font-serif text-xl">Nova lista</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 mt-2">
+          <div className="space-y-5 mt-2">
+            <div className="grid grid-cols-2 gap-3">
+              {([
+                { v: "private", icon: Lock, label: "Privada", desc: "Só você vê" },
+                { v: "public", icon: Globe, label: "Pública", desc: "Visível aos grupos" },
+              ] as const).map(({ v, icon: Icon, label, desc }) => {
+                const active = createVisibility === v;
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    onClick={() => setCreateVisibility(v)}
+                    className={`relative rounded-2xl border p-4 text-left transition-all ${
+                      active
+                        ? "border-primary bg-primary/5 shadow-sm"
+                        : "border-border/50 hover:border-border bg-background"
+                    }`}
+                  >
+                    {active && (
+                      <div className="absolute top-2 right-2 w-5 h-5 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                        <Check className="w-3 h-3" />
+                      </div>
+                    )}
+                    <Icon className={`w-5 h-5 mb-2 ${active ? "text-primary" : "text-muted-foreground"}`} />
+                    <div className="text-sm font-medium text-foreground">{label}</div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5">{desc}</div>
+                  </button>
+                );
+              })}
+            </div>
+
             <Input
-              placeholder={createVisibility === "private" ? "Ex: Aniversário 2026" : "Ex: Presentes para amigos"}
+              placeholder={createVisibility === "private" ? "Ex: Minha Lista Pessoal" : "Ex: Ideias de Presentes"}
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               maxLength={100}
               autoFocus
               className="h-12 rounded-xl"
             />
-            <p className="text-xs text-muted-foreground leading-relaxed">
-              {createVisibility === "private"
-                ? "Apenas você poderá ver os itens desta lista."
-                : "Amigos e membros dos seus grupos poderão ver esta lista."}
-            </p>
+
             <Button
               className="w-full h-12 rounded-xl font-medium"
               disabled={createMutation.isPending}
