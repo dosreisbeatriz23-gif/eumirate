@@ -48,9 +48,9 @@ const AppLayout = () => {
         <div className="container mx-auto px-8 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate("/dashboard")}
-            className="text-xl font-serif tracking-tight text-primary-foreground/90 hover:text-primary-foreground transition-colors"
+            className="text-xl font-gliker tracking-tight text-primary-foreground/90 hover:text-primary-foreground transition-colors"
           >
-            EUMIRATE
+            eumirate
           </button>
           <nav className="flex items-center gap-1">
             {desktopLinks.map((link) => (
@@ -76,9 +76,9 @@ const AppLayout = () => {
         <div className="px-5 h-12 flex items-center">
           <button
             onClick={() => navigate("/dashboard")}
-            className="text-lg font-serif tracking-tight text-primary-foreground/90"
+            className="text-lg font-gliker tracking-tight text-primary-foreground/90"
           >
-            EUMIRATE
+            eumirate
           </button>
         </div>
       </header>
