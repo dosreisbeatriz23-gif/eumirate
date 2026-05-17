@@ -167,13 +167,14 @@ const AddItem = () => {
     onSuccess: (savedListId) => {
       queryClient.invalidateQueries({ queryKey: ["wishlist-items", savedListId] });
       queryClient.invalidateQueries({ queryKey: ["wishlists"] });
+      queryClient.invalidateQueries({ queryKey: ["all-items-mural"] });
       if (groupId) {
         queryClient.invalidateQueries({ queryKey: ["group-items"] });
         toast.success("Item adicionado ao grupo!");
         navigate(`/grupo/${groupId}`, { replace: true });
       } else {
         toast.success("Item adicionado com sucesso!");
-        navigate("/meus-desejos", { replace: true });
+        navigate("/home", { replace: true });
       }
     },
     onError: () => toast.error("Erro ao salvar item"),
