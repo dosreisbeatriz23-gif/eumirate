@@ -32,6 +32,7 @@ const Grupos = () => {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
 
   const { data: groups = [], isLoading } = useQuery({
     queryKey: ["groups", userId],
