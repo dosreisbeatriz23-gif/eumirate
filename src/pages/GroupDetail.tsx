@@ -93,7 +93,7 @@ const GroupDetail = () => {
         .from("wishlist_items")
         .select("*")
         .in("wishlist_id", wishlistIds)
-        .eq("visibility", "group")
+        .in("visibility", ["group", "public"])
         .order("created_at", { ascending: false });
       if (error) throw error;
 

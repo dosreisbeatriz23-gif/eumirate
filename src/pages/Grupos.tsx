@@ -13,7 +13,7 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Users, Heart, Home, Plus, Copy, Check, Crown, UserPlus, Trash2 } from "lucide-react";
+import { Users, Heart, Home, Plus, Copy, Check, Crown, UserPlus, Trash2, Pencil } from "lucide-react";
 import { toast } from "sonner";
 
 const defaultSuggestions = [
@@ -33,6 +33,8 @@ const Grupos = () => {
   const [description, setDescription] = useState("");
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [groupToDelete, setGroupToDelete] = useState<string | null>(null);
+  const [groupToEdit, setGroupToEdit] = useState<{ id: string; name: string } | null>(null);
+  const [editName, setEditName] = useState("");
 
   const { data: groups = [], isLoading } = useQuery({
     queryKey: ["groups", userId],
@@ -80,6 +82,18 @@ const Grupos = () => {
     onError: () => toast.error("Erro ao excluir grupo"),
   });
 
+  const updateGroupName = useMutation({
+    mutationFn: async ({ groupId, name }: { groupId: string; name: string }) => {
+      const { error } = await supabase.from("groups").update({ name }).eq("id", groupId);
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["groups", userId] });
+      setGroupToEdit(null);
+      toast.success("Nome do grupo atualizado!");
+    },
+    onError: () => toast.error("Erro ao atualizar o grupo"),
+  });
   const handleQuickCreate = (groupName: string) => { setName(groupName); setShowCreate(true); };
 
   const copyInviteLink = (inviteCode: string, groupId: string) => {
@@ -170,14 +184,26 @@ const Grupos = () => {
                   <span>{copiedId === group.id ? "Copiado!" : "Convidar"}</span>
                 </Button>
                 {group.owner_id === userId && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="shrink-0 rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                    onClick={(e) => { e.stopPropagation(); setGroupToDelete(group.id); }}
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </Button>
+                  <>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="shrink-0 rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                      onClick={(e) => { e.stopPropagation(); setGroupToEdit({ id: group.id, name: group.name }); setEditName(group.name); }}
+                      aria-label="Editar nome do grupo"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="shrink-0 rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                      onClick={(e) => { e.stopPropagation(); setGroupToDelete(group.id); }}
+                      aria-label="Excluir grupo"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  </>
                 )}
               </div>
             );
@@ -205,6 +231,33 @@ const Grupos = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <Dialog open={!!groupToEdit} onOpenChange={(o) => !o && setGroupToEdit(null)}>
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-serif">Editar nome do grupo</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!editName.trim() || !groupToEdit) return;
+              updateGroupName.mutate({ groupId: groupToEdit.id, name: editName.trim() });
+            }}
+            className="space-y-4 mt-2"
+          >
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              autoFocus
+              className="h-12 rounded-xl"
+              placeholder="Nome do grupo"
+            />
+            <Button type="submit" className="w-full h-12 rounded-xl font-medium" disabled={!editName.trim() || updateGroupName.isPending}>
+              {updateGroupName.isPending ? "Salvando..." : "Salvar"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="sm:max-w-md rounded-2xl">
