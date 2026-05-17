@@ -22,25 +22,17 @@ const GroupInvite = () => {
     if (!code || !userId) return;
 
     const load = async () => {
-      // Find group by invite_code
-      const { data: g, error } = await supabase
-        .from("groups")
-        .select("*")
-        .eq("invite_code", code)
-        .single();
+      // Look up group via secure RPC (returns only safe fields)
+      const { data: rows, error } = await supabase
+        .rpc("get_group_by_invite_code", { p_invite_code: code });
 
+      const g = Array.isArray(rows) ? rows[0] : null;
       if (error || !g) {
         setStatus("error");
         return;
       }
       setGroup(g);
-
-      // Check member count
-      const { count } = await supabase
-        .from("group_members")
-        .select("*", { count: "exact", head: true })
-        .eq("group_id", g.id);
-      setMemberCount(count || 0);
+      setMemberCount(Number(g.member_count) || 0);
 
       // Check if already a member
       const { data: existing } = await supabase
