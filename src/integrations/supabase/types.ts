@@ -244,6 +244,16 @@ export type Database = {
         Args: { p_reservation_id: string; p_visitor_token: string }
         Returns: boolean
       }
+      get_group_by_invite_code: {
+        Args: { p_invite_code: string }
+        Returns: {
+          description: string
+          icon: string
+          id: string
+          member_count: number
+          name: string
+        }[]
+      }
       get_wishlist_by_share_token: { Args: { token: string }; Returns: string }
       is_group_member: {
         Args: { _group_id: string; _user_id: string }
