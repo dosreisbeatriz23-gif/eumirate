@@ -14,6 +14,7 @@ import AddItem from "./pages/AddItem";
 import MeusDesejos from "./pages/MeusDesejos";
 import Categorias from "./pages/Categorias";
 import Grupos from "./pages/Grupos";
+import Presentes from "./pages/Presentes";
 import GroupDetail from "./pages/GroupDetail";
 import Perfil from "./pages/Perfil";
 import ItemDetail from "./pages/ItemDetail";
@@ -44,6 +45,7 @@ const App = () => (
               <Route path="/meus-desejos" element={<MeusDesejos />} />
               <Route path="/categorias" element={<Categorias />} />
               <Route path="/grupos" element={<Grupos />} />
+              <Route path="/presentes" element={<Presentes />} />
               <Route path="/grupo/convite/:code" element={<GroupInvite />} />
               <Route path="/grupo/:id" element={<GroupDetail />} />
               <Route path="/item/:id" element={<ItemDetail />} />

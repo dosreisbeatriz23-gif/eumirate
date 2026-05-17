@@ -112,23 +112,38 @@ export type Database = {
       reservations: {
         Row: {
           created_at: string
+          expected_delivery_date: string | null
           id: string
+          is_surprise: boolean
+          message: string | null
+          reserver_user_id: string | null
+          updated_at: string
           visitor_name: string | null
-          visitor_token: string
+          visitor_token: string | null
           wishlist_item_id: string
         }
         Insert: {
           created_at?: string
+          expected_delivery_date?: string | null
           id?: string
+          is_surprise?: boolean
+          message?: string | null
+          reserver_user_id?: string | null
+          updated_at?: string
           visitor_name?: string | null
-          visitor_token: string
+          visitor_token?: string | null
           wishlist_item_id: string
         }
         Update: {
           created_at?: string
+          expected_delivery_date?: string | null
           id?: string
+          is_surprise?: boolean
+          message?: string | null
+          reserver_user_id?: string | null
+          updated_at?: string
           visitor_name?: string | null
-          visitor_token?: string
+          visitor_token?: string | null
           wishlist_item_id?: string
         }
         Relationships: [
@@ -261,6 +276,16 @@ export type Database = {
       }
       owns_wishlist: { Args: { wishlist_uuid: string }; Returns: boolean }
       owns_wishlist_item: { Args: { item_uuid: string }; Returns: boolean }
+      reserve_gift: {
+        Args: {
+          p_expected_delivery_date?: string
+          p_is_surprise?: boolean
+          p_item_id: string
+          p_message?: string
+          p_visitor_name?: string
+        }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never
