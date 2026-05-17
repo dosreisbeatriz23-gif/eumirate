@@ -217,14 +217,12 @@ const GroupMembers = () => {
                   <p className="font-medium text-foreground text-sm truncate">
                     {getDisplayName(member)}
                   </p>
+                  <p className="text-[11px] text-muted-foreground/70 truncate">
+                    @{getDisplayName(member).toLowerCase().replace(/[^a-z0-9]/g, "")}
+                  </p>
                   {member.role === "owner" && (
-                    <span className="inline-block text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium tracking-wider">
+                    <span className="inline-block mt-1 text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium tracking-wider">
                       ADMIN
-                    </span>
-                  )}
-                  {member.role === "member" && (
-                    <span className="text-[11px] text-muted-foreground/70">
-                      Membro
                     </span>
                   )}
                 </div>
