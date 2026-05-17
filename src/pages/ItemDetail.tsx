@@ -147,8 +147,8 @@ const ItemDetail = () => {
 
   const isPrivate = item.visibility === "private";
   const isOwner = !!user && !!wishlist && wishlist.user_id === user.id;
-  const listIsPublic = wishlist?.visibility === "public";
-  const canReserve = !isOwner && listIsPublic && !item.is_reserved;
+  const itemIsShared = item.visibility === "public" || item.visibility === "group";
+  const canReserve = !!user && !isOwner && itemIsShared && !item.is_reserved;
 
   return (
     <div className="min-h-screen bg-background flex flex-col page-enter">
@@ -231,7 +231,7 @@ const ItemDetail = () => {
               </Button>
             )}
 
-            {!isOwner && listIsPublic && item.is_reserved && (
+            {!isOwner && itemIsShared && item.is_reserved && (
               <Button disabled className="w-full h-12 rounded-2xl gap-2.5 text-[15px] font-medium">
                 Já reservado
               </Button>
