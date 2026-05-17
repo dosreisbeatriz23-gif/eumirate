@@ -188,7 +188,6 @@ const MeusDesejos = () => {
             title="Minha Lista Pessoal"
             subtitle="Somente você pode visualizar"
             accent="bg-muted/60 text-muted-foreground"
-            onAdd={() => openCreateWith("private")}
           />
           {privateLists.length === 0 ? (
             <EmptyState icon={Gift} text="Você ainda não criou nenhuma lista pessoal" onAction={() => openCreateWith("private")} actionText="Criar primeira lista" />
