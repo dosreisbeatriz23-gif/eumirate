@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useParams, useNavigate } from "react-router-dom";
-import { ArrowLeft, ExternalLink, Lock, Users, Gift, Trash2 } from "lucide-react";
+import { ArrowLeft, ExternalLink, Lock, Users, Gift, Trash2, Calendar, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -9,6 +9,8 @@ import {
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 import { useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { ReserveGiftDialog } from "@/components/reservations/ReserveGiftDialog";
 
 const ItemDetail = () => {
   const { id } = useParams<{ id: string }>();
