@@ -169,6 +169,16 @@ const Grupos = () => {
                   {copiedId === group.id ? <Check className="w-3.5 h-3.5 text-primary" /> : <UserPlus className="w-3.5 h-3.5" />}
                   <span>{copiedId === group.id ? "Copiado!" : "Convidar"}</span>
                 </Button>
+                {group.owner_id === userId && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="shrink-0 rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                    onClick={(e) => { e.stopPropagation(); setGroupToDelete(group.id); }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
               </div>
             );
           })}
