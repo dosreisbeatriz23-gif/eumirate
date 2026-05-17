@@ -181,12 +181,15 @@ const GroupDetail = () => {
       </div>
 
       {/* Members badge */}
-      <div className="flex items-center gap-2 text-sm text-muted-foreground">
-        <Users className="w-4 h-4" />
+      <button
+        onClick={() => navigate(`/grupo/${id}/membros`)}
+        className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors group"
+      >
+        <Users className="w-4 h-4 group-hover:text-primary transition-colors" />
         <span>{memberIds.length} {memberIds.length === 1 ? "membro" : "membros"}</span>
         <span className="text-muted-foreground/40">·</span>
         <span>{items.length} {items.length === 1 ? "presente" : "presentes"} compartilhados</span>
-      </div>
+      </button>
 
       {/* Invite section */}
       <div className="rounded-2xl border border-border/50 bg-card overflow-hidden">
