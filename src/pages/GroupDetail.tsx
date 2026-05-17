@@ -42,6 +42,16 @@ const GroupDetail = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState(0);
   const [copied, setCopied] = useState(false);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel(`group-items-${id}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "wishlist_items" },
+        () => queryClient.invalidateQueries({ queryKey: ["group-items", id] }))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id, queryClient]);
 
   const { data: group } = useQuery({
     queryKey: ["group", id],
