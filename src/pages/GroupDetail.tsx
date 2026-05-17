@@ -285,62 +285,105 @@ const GroupDetail = () => {
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {filteredItems.map((item) => (
-            <Card
-              key={item.id}
-              className="group rounded-2xl overflow-hidden border-border/50 hover:border-primary/20 transition-all cursor-pointer"
-              onClick={() => navigate(`/item/${item.id}`)}
-            >
-              {item.image_url ? (
-                <div className="h-40 bg-muted overflow-hidden">
-                  <img
-                    src={item.image_url}
-                    alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    loading="lazy"
-                  />
-                </div>
-              ) : (
-                <div className="h-40 bg-muted/50 flex items-center justify-center">
-                  <Gift className="w-10 h-10 text-muted-foreground/30" />
-                </div>
-              )}
-
-              {item.is_reserved && (
-                <div className="absolute top-3 right-3 bg-primary/90 text-primary-foreground text-xs px-2.5 py-1 rounded-full">
-                  Reservado
-                </div>
-              )}
-
-              <CardContent className="p-4 space-y-2">
-                <h3 className="font-serif font-medium text-foreground text-sm leading-tight line-clamp-2">
-                  {item.name}
-                </h3>
-                {item.price_range && (
-                  <span className="inline-block text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
-                    {item.price_range}
-                  </span>
-                )}
-                {item.author_name && (
-                  <p className="text-[11px] text-muted-foreground/70 truncate">
-                    Adicionado por {item.author_name}
-                  </p>
-                )}
-                {item.external_link && (
-                  <div className="pt-1">
-                    <Button variant="ghost" size="sm" className="h-7 px-2 text-xs gap-1" asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-                      <a href={item.external_link} target="_blank" rel="noopener noreferrer">
-                        <ExternalLink className="w-3 h-3" />
-                        Ver produto
-                      </a>
-                    </Button>
+          {filteredItems.map((item) => {
+            const isPublic = item.list_visibility === "public";
+            const isOwn = item.owner_user_id === userId;
+            const reserved = item.is_reserved;
+            const canReserve = isPublic && !isOwn && !reserved;
+            return (
+              <Card
+                key={item.id}
+                className={`group rounded-2xl overflow-hidden border-border/50 transition-all relative ${
+                  reserved
+                    ? "opacity-75 hover:border-border/50"
+                    : "hover:border-primary/20 cursor-pointer"
+                }`}
+                onClick={() => !reserved && navigate(`/item/${item.id}`)}
+              >
+                {item.image_url ? (
+                  <div className={`h-40 bg-muted overflow-hidden ${reserved ? "grayscale-[35%]" : ""}`}>
+                    <img
+                      src={item.image_url}
+                      alt={item.name}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div className="h-40 bg-muted/50 flex items-center justify-center">
+                    <Gift className="w-10 h-10 text-muted-foreground/30" />
                   </div>
                 )}
-              </CardContent>
-            </Card>
-          ))}
+
+                {reserved && (
+                  <div className="absolute top-3 right-3 bg-secondary text-secondary-foreground text-[10px] font-semibold tracking-wider uppercase px-2.5 py-1 rounded-full shadow-sm border border-border/40">
+                    Reservado
+                  </div>
+                )}
+                {!isPublic && (
+                  <div className="absolute top-3 left-3 bg-card/90 backdrop-blur text-muted-foreground text-[10px] px-2 py-1 rounded-full flex items-center gap-1 border border-border/40">
+                    <Lock className="w-3 h-3" /> Privado
+                  </div>
+                )}
+
+                <CardContent className="p-4 space-y-2">
+                  <h3 className="font-serif font-medium text-foreground text-sm leading-tight line-clamp-2">
+                    {item.name}
+                  </h3>
+                  {item.price_range && (
+                    <span className="inline-block text-xs bg-muted text-muted-foreground px-2 py-0.5 rounded-full">
+                      {item.price_range}
+                    </span>
+                  )}
+                  {item.author_name && (
+                    <p className="text-[11px] text-muted-foreground/70 truncate">
+                      Adicionado por {item.author_name}
+                    </p>
+                  )}
+                  <div className="flex items-center gap-2 pt-1.5">
+                    {isPublic && (
+                      <Button
+                        size="sm"
+                        variant={reserved ? "outline" : "default"}
+                        disabled={reserved || isOwn}
+                        className="rounded-full h-8 text-xs flex-1 gap-1.5"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (canReserve) setReserveItem({ id: item.id, name: item.name });
+                        }}
+                        title={
+                          isOwn
+                            ? "Você não pode reservar seu próprio item"
+                            : reserved
+                              ? "Este item já foi reservado"
+                              : "Reservar este presente"
+                        }
+                      >
+                        <Gift className="w-3.5 h-3.5" />
+                        {reserved ? "Reservado" : isOwn ? "Seu item" : "Reservar Presente"}
+                      </Button>
+                    )}
+                    {item.external_link && (
+                      <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0" asChild onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+                        <a href={item.external_link} target="_blank" rel="noopener noreferrer" title="Abrir link">
+                          <ExternalLink className="w-3.5 h-3.5" />
+                        </a>
+                      </Button>
+                    )}
+                  </div>
+                </CardContent>
+              </Card>
+            );
+          })}
         </div>
       )}
+
+      <ReserveGiftDialog
+        open={!!reserveItem}
+        onOpenChange={(o) => !o && setReserveItem(null)}
+        itemId={reserveItem?.id ?? null}
+        itemName={reserveItem?.name}
+      />
     </div>
   );
 };
