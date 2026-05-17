@@ -42,8 +42,10 @@ const GroupDetail = () => {
   const { user } = useAuth();
   const userId = user?.id;
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
   const [activeFilter, setActiveFilter] = useState(0);
   const [copied, setCopied] = useState(false);
+  const [reserveItem, setReserveItem] = useState<{ id: string; name: string } | null>(null);
 
   const { data: group } = useQuery({
     queryKey: ["group", id],
