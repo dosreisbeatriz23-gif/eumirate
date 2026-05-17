@@ -232,6 +232,33 @@ const Grupos = () => {
         </AlertDialogContent>
       </AlertDialog>
 
+      <Dialog open={!!groupToEdit} onOpenChange={(o) => !o && setGroupToEdit(null)}>
+        <DialogContent className="sm:max-w-md rounded-2xl">
+          <DialogHeader>
+            <DialogTitle className="font-serif">Editar nome do grupo</DialogTitle>
+          </DialogHeader>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!editName.trim() || !groupToEdit) return;
+              updateGroupName.mutate({ groupId: groupToEdit.id, name: editName.trim() });
+            }}
+            className="space-y-4 mt-2"
+          >
+            <Input
+              value={editName}
+              onChange={(e) => setEditName(e.target.value)}
+              autoFocus
+              className="h-12 rounded-xl"
+              placeholder="Nome do grupo"
+            />
+            <Button type="submit" className="w-full h-12 rounded-xl font-medium" disabled={!editName.trim() || updateGroupName.isPending}>
+              {updateGroupName.isPending ? "Salvando..." : "Salvar"}
+            </Button>
+          </form>
+        </DialogContent>
+      </Dialog>
+
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
