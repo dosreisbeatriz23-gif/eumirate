@@ -48,7 +48,7 @@ const AppLayout = () => {
         <div className="container mx-auto px-8 h-14 flex items-center justify-between">
           <button
             onClick={() => navigate("/dashboard")}
-            className="text-xl font-gliker tracking-tight text-primary-foreground/90 hover:text-primary-foreground transition-colors"
+            className="font-gliker tracking-tight text-primary-foreground/90 hover:text-primary-foreground transition-colors text-4xl"
           >
             eumirate
           </button>
