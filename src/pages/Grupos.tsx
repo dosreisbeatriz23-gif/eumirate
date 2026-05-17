@@ -185,6 +185,27 @@ const Grupos = () => {
         </div>
       )}
 
+      <AlertDialog open={!!groupToDelete} onOpenChange={() => setGroupToDelete(null)}>
+        <AlertDialogContent className="rounded-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="font-serif">Excluir grupo</AlertDialogTitle>
+            <AlertDialogDescription>
+              Tem certeza que deseja excluir este grupo? Essa ação não pode ser desfeita.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="rounded-full">Cancelar</AlertDialogCancel>
+            <AlertDialogAction
+              className="rounded-full bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              onClick={() => groupToDelete && deleteGroup.mutate(groupToDelete)}
+              disabled={deleteGroup.isPending}
+            >
+              {deleteGroup.isPending ? "Excluindo..." : "Excluir"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
       <Dialog open={showCreate} onOpenChange={setShowCreate}>
         <DialogContent className="sm:max-w-md rounded-2xl">
           <DialogHeader>
