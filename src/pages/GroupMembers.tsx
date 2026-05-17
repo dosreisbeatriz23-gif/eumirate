@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -26,6 +26,8 @@ const GroupMembers = () => {
   const { id } = useParams<{ id: string }>();
   const { user } = useAuth();
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const [membershipChecked, setMembershipChecked] = useState(false);
   const [isMember, setIsMember] = useState(false);
   const [displayCount, setDisplayCount] = useState(PAGE_SIZE);
 
@@ -82,9 +84,13 @@ const GroupMembers = () => {
   });
 
   useEffect(() => {
+    let cancelled = false;
     const checkMembership = async () => {
       if (!user || !id) {
-        setIsMember(false);
+        if (!cancelled) {
+          setIsMember(false);
+          setMembershipChecked(true);
+        }
         return;
       }
       const { data } = await supabase
@@ -93,16 +99,34 @@ const GroupMembers = () => {
         .eq("group_id", id)
         .eq("user_id", user.id)
         .maybeSingle();
-      setIsMember(!!data);
+      if (!cancelled) {
+        setIsMember(!!data);
+        setMembershipChecked(true);
+      }
     };
     checkMembership();
+    return () => { cancelled = true; };
   }, [user, id]);
 
   useEffect(() => {
-    if (!isMember && !isLoading && user && id) {
+    if (membershipChecked && !isMember && user && id) {
       navigate("/grupos");
     }
-  }, [isMember, isLoading, user, id, navigate]);
+  }, [membershipChecked, isMember, user, id, navigate]);
+
+  // Realtime: refetch members when group_members changes
+  useEffect(() => {
+    if (!id || !isMember) return;
+    const channel = supabase
+      .channel(`group-members-realtime-${id}`)
+      .on(
+        "postgres_changes",
+        { event: "*", schema: "public", table: "group_members", filter: `group_id=eq.${id}` },
+        () => queryClient.invalidateQueries({ queryKey: ["group-members-detailed", id] })
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id, isMember, queryClient]);
 
   const visibleMembers = members.slice(0, displayCount);
   const hasMore = displayCount < members.length;
@@ -193,14 +217,12 @@ const GroupMembers = () => {
                   <p className="font-medium text-foreground text-sm truncate">
                     {getDisplayName(member)}
                   </p>
+                  <p className="text-[11px] text-muted-foreground/70 truncate">
+                    @{getDisplayName(member).toLowerCase().replace(/[^a-z0-9]/g, "")}
+                  </p>
                   {member.role === "owner" && (
-                    <span className="inline-block text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium tracking-wider">
+                    <span className="inline-block mt-1 text-[10px] bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium tracking-wider">
                       ADMIN
-                    </span>
-                  )}
-                  {member.role === "member" && (
-                    <span className="text-[11px] text-muted-foreground/70">
-                      Membro
                     </span>
                   )}
                 </div>
