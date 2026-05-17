@@ -83,10 +83,9 @@ const GroupDetail = () => {
     queryFn: async () => {
       if (memberIds.length === 0) return [];
 
-      // Get wishlists owned by members (with user_id)
       const { data: wishlists, error: wErr } = await supabase
         .from("wishlists")
-        .select("id, user_id")
+        .select("id, user_id, visibility, title")
         .in("user_id", memberIds);
       if (wErr) throw wErr;
 
@@ -101,12 +100,10 @@ const GroupDetail = () => {
         .order("created_at", { ascending: false });
       if (error) throw error;
 
-      // Build wishlist_id → user_id map
-      const wlUserMap: Record<string, string> = {};
-      wishlists?.forEach((w) => { wlUserMap[w.id] = w.user_id; });
+      const wlMap: Record<string, { user_id: string; visibility: string; title: string }> = {};
+      wishlists?.forEach((w) => { wlMap[w.id] = { user_id: w.user_id, visibility: w.visibility, title: w.title }; });
 
-      // Fetch profiles for all member user_ids
-      const uniqueUserIds = [...new Set(Object.values(wlUserMap))];
+      const uniqueUserIds = [...new Set(Object.values(wlMap).map((w) => w.user_id))];
       const { data: profiles } = await supabase
         .from("profiles")
         .select("user_id, display_name")
@@ -115,14 +112,33 @@ const GroupDetail = () => {
       const profileMap: Record<string, string> = {};
       profiles?.forEach((p) => { profileMap[p.user_id] = p.display_name || "Membro"; });
 
-      // Attach author name to each item
-      return (data || []).map((item) => ({
-        ...item,
-        author_name: profileMap[wlUserMap[item.wishlist_id]] || "Membro",
-      }));
+      return (data || []).map((item) => {
+        const wl = wlMap[item.wishlist_id];
+        return {
+          ...item,
+          author_name: profileMap[wl?.user_id || ""] || "Membro",
+          owner_user_id: wl?.user_id || "",
+          list_visibility: wl?.visibility || "private",
+        };
+      });
     },
     enabled: memberIds.length > 0,
   });
+
+  // Realtime: refresh items/reservations live
+  useEffect(() => {
+    if (!id) return;
+    const ch = supabase
+      .channel(`group-detail-${id}`)
+      .on("postgres_changes", { event: "*", schema: "public", table: "reservations" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["group-items", id] });
+      })
+      .on("postgres_changes", { event: "*", schema: "public", table: "wishlist_items" }, () => {
+        queryClient.invalidateQueries({ queryKey: ["group-items", id] });
+      })
+      .subscribe();
+    return () => { supabase.removeChannel(ch); };
+  }, [id, queryClient]);
 
   const filter = PRICE_FILTERS[activeFilter];
   const filteredItems = items.filter((item) => {
