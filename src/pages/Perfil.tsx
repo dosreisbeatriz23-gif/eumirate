@@ -285,6 +285,26 @@ const Perfil = () => {
           </Accordion>
         </TabsContent>
       </Tabs>
+
+      {/* Footer: Presentes section */}
+      <div className="mt-10 pt-6 border-t border-border/40">
+        <h3 className="text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70 mb-3 px-1">
+          Presentes
+        </h3>
+        <button
+          onClick={() => navigate("/presentes")}
+          className="w-full flex items-center gap-4 p-4 rounded-2xl bg-card border border-border/30 shadow-soft hover:shadow-card hover:border-primary/30 transition-all duration-300 group"
+        >
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/15 transition-colors">
+            <Gift className="w-5 h-5 text-primary" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-sm font-medium text-foreground">Meus Presentes Reservados</p>
+            <p className="text-xs text-muted-foreground">Gerencie suas reservas em listas públicas</p>
+          </div>
+          <ChevronRight className="w-4 h-4 text-muted-foreground/40 group-hover:text-primary transition-colors" />
+        </button>
+      </div>
     </div>
   );
 };
