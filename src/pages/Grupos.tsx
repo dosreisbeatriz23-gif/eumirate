@@ -52,20 +52,6 @@ const Grupos = () => {
   });
 
   const createGroup = useMutation({
-    mutationFn: async ({ name, description }: { name: string; description: string }) => {
-      const { data, error } = await supabase
-        .from("groups").insert({ name, description: description || null, owner_id: userId }).select().single();
-      if (error) throw error;
-      await supabase.from("group_members").insert({ group_id: data.id, user_id: userId, role: "owner" });
-      return data;
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["groups", userId] });
-      setShowCreate(false); setName(""); setDescription("");
-      toast.success("Grupo criado com sucesso!");
-    },
-    onError: () => toast.error("Erro ao criar grupo"),
-  });
 
   const handleQuickCreate = (groupName: string) => { setName(groupName); setShowCreate(true); };
 
