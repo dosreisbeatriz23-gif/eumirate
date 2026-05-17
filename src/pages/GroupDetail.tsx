@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -42,6 +42,16 @@ const GroupDetail = () => {
   const navigate = useNavigate();
   const [activeFilter, setActiveFilter] = useState(0);
   const [copied, setCopied] = useState(false);
+  const queryClient = useQueryClient();
+
+  useEffect(() => {
+    const channel = supabase
+      .channel(`group-items-${id}`)
+      .on("postgres_changes", { event: "UPDATE", schema: "public", table: "wishlist_items" },
+        () => queryClient.invalidateQueries({ queryKey: ["group-items", id] }))
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [id, queryClient]);
 
   const { data: group } = useQuery({
     queryKey: ["group", id],
@@ -268,7 +278,7 @@ const GroupDetail = () => {
           {filteredItems.map((item) => (
             <Card
               key={item.id}
-              className="group rounded-2xl overflow-hidden border-border/50 hover:border-primary/20 transition-all cursor-pointer"
+              className="group relative rounded-2xl overflow-hidden border-border/50 hover:border-primary/20 transition-all cursor-pointer"
               onClick={() => navigate(`/item/${item.id}`)}
             >
               {item.image_url ? (
@@ -276,7 +286,7 @@ const GroupDetail = () => {
                   <img
                     src={item.image_url}
                     alt={item.name}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    className={`w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ${item.is_reserved ? "grayscale-[40%] opacity-80" : ""}`}
                     loading="lazy"
                   />
                 </div>
@@ -287,8 +297,8 @@ const GroupDetail = () => {
               )}
 
               {item.is_reserved && (
-                <div className="absolute top-3 right-3 bg-primary/90 text-primary-foreground text-xs px-2.5 py-1 rounded-full">
-                  Reservado
+                <div className="absolute top-3 right-3 bg-primary text-primary-foreground text-[10px] font-semibold tracking-wider px-2.5 py-1 rounded-full shadow-medium">
+                  RESERVADO
                 </div>
               )}
 
