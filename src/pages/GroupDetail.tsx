@@ -279,14 +279,18 @@ const GroupDetail = () => {
           ))}
         </div>
       ) : filteredItems.length === 0 ? (
-        <div className="text-center py-16">
+        <div className="text-center py-16 max-w-md mx-auto">
           <Gift className="w-12 h-12 text-muted-foreground/30 mx-auto mb-4" />
           <p className="text-muted-foreground text-sm">
             {activeFilter === 0
-              ? "Nenhum presente compartilhado ainda"
+              ? "Os membros ainda não compartilharam presentes públicos neste grupo."
               : "Nenhum presente nesta faixa de valor"}
           </p>
-          {activeFilter !== 0 && (
+          {activeFilter === 0 ? (
+            <p className="text-xs text-muted-foreground/70 mt-2 leading-relaxed">
+              Para compartilhar, adicione itens à sua lista pública "Presentes Que Quero Ganhar".
+            </p>
+          ) : (
             <Button
               variant="ghost"
               size="sm"
