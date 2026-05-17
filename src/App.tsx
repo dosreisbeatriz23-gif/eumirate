@@ -17,6 +17,7 @@ import Grupos from "./pages/Grupos";
 import GroupDetail from "./pages/GroupDetail";
 import Perfil from "./pages/Perfil";
 import ItemDetail from "./pages/ItemDetail";
+import Presentes from "./pages/Presentes";
 import GroupInvite from "./pages/GroupInvite";
 import NotFound from "./pages/NotFound";
 
