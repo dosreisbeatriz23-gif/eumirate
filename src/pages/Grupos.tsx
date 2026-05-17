@@ -9,7 +9,11 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle,
 } from "@/components/ui/dialog";
-import { Users, Heart, Home, Plus, Copy, Check, Crown, UserPlus } from "lucide-react";
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Users, Heart, Home, Plus, Copy, Check, Crown, UserPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 
 const defaultSuggestions = [
