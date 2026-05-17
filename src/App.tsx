@@ -48,6 +48,7 @@ const App = () => (
               <Route path="/grupo/convite/:code" element={<GroupInvite />} />
               <Route path="/grupo/:id" element={<GroupDetail />} />
               <Route path="/item/:id" element={<ItemDetail />} />
+              <Route path="/presentes" element={<Presentes />} />
               <Route path="/perfil" element={<Perfil />} />
             </Route>
 
