@@ -137,26 +137,15 @@ const MeusDesejos = () => {
     );
   };
 
-  const SectionHeader = ({ icon: Icon, title, subtitle, accent, onAdd }: any) => (
-    <div className="flex items-start justify-between mb-6 pb-4 border-b border-border/30">
-      <div className="flex items-center gap-3">
-        <div className={`w-11 h-11 rounded-2xl flex items-center justify-center ${accent}`}>
-          <Icon className="w-5 h-5" />
-        </div>
-        <div>
-          <h3 className="text-xl sm:text-2xl font-serif text-foreground tracking-tight">{title}</h3>
-          <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{subtitle}</p>
-        </div>
+  const SectionHeader = ({ icon: Icon, title, subtitle, accent }: any) => (
+    <div className="flex items-center gap-3 mb-6 pb-4 border-b border-border/30">
+      <div className={`w-11 h-11 rounded-2xl flex items-center justify-center shrink-0 ${accent}`}>
+        <Icon className="w-5 h-5" />
       </div>
-      <Button
-        variant="outline"
-        size="sm"
-        className="rounded-full text-xs gap-1.5 border-border/50 shrink-0"
-        onClick={onAdd}
-      >
-        <Plus className="w-3.5 h-3.5" />
-        <span className="hidden sm:inline">Nova lista</span>
-      </Button>
+      <div>
+        <h3 className="text-xl sm:text-2xl font-serif text-foreground tracking-tight">{title}</h3>
+        <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">{subtitle}</p>
+      </div>
     </div>
   );
 
