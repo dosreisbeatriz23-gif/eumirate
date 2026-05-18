@@ -108,7 +108,7 @@ const Grupos = () => {
   const suggestions = defaultSuggestions.filter((s) => !existingNames.includes(s.name));
 
   return (
-    <div className="container mx-auto px-4 md:px-8 py-8 md:py-12 max-w-2xl space-y-10 page-enter">
+    <div className="container mx-auto px-5 md:px-8 py-8 md:py-12 max-w-2xl space-y-8 md:space-y-10 page-enter">
       <div className="flex items-center justify-between">
         <h2 className="sm:text-4xl title-gliker tracking-tight text-3xl">Meus Grupos</h2>
         <Button onClick={() => setShowCreate(true)} className="rounded-full gap-2 h-10 px-5 text-[13px] font-medium" size="sm">
@@ -153,58 +153,84 @@ const Grupos = () => {
             return (
               <div
                 key={group.id}
-                className="flex items-center gap-4 rounded-2xl p-4 premium-card cursor-pointer"
+                className="rounded-2xl p-4 premium-card cursor-pointer"
                 onClick={() => navigate(`/grupo/${group.id}`)}
               >
-                <div className="w-12 h-12 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
-                  <Users className="w-5 h-5 text-primary" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <h3 className="font-medium text-foreground text-sm truncate">{group.name}</h3>
-                    {group.owner_id === userId && <Crown className="w-3.5 h-3.5 text-primary/40 shrink-0" />}
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-primary/8 flex items-center justify-center shrink-0">
+                    <Users className="w-5 h-5 text-primary" />
                   </div>
-                  {group.description && (
-                    <p className="text-xs text-muted-foreground truncate mt-0.5">{group.description}</p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <h3 className="font-medium text-foreground text-sm truncate">{group.name}</h3>
+                      {group.owner_id === userId && <Crown className="w-3.5 h-3.5 text-primary/40 shrink-0" />}
+                    </div>
+                    {group.description && (
+                      <p className="text-xs text-muted-foreground truncate mt-0.5">{group.description}</p>
+                    )}
+                    <div className="flex items-center gap-1 mt-1.5">
+                      <UserPlus className="w-3 h-3 text-muted-foreground/40" />
+                      <span className="text-xs text-muted-foreground/50">
+                        {memberCount} {memberCount === 1 ? "membro" : "membros"}
+                      </span>
+                    </div>
+                  </div>
+                  {group.owner_id === userId && (
+                    <div className="hidden sm:flex items-center gap-1 shrink-0">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
+                        onClick={(e) => { e.stopPropagation(); setGroupToEdit({ id: group.id, name: group.name }); setEditName(group.name); }}
+                        aria-label="Editar nome do grupo"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                        onClick={(e) => { e.stopPropagation(); setGroupToDelete(group.id); }}
+                        aria-label="Excluir grupo"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
                   )}
-                  <div className="flex items-center gap-1 mt-1.5">
-                    <UserPlus className="w-3 h-3 text-muted-foreground/40" />
-                    <span className="text-xs text-muted-foreground/50">
-                      {memberCount} {memberCount === 1 ? "membro" : "membros"}
-                    </span>
-                  </div>
                 </div>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="shrink-0 rounded-full gap-1.5 h-8 px-3 text-xs font-medium"
-                  onClick={(e) => { e.stopPropagation(); copyInviteLink(group.invite_code, group.id); }}
-                >
-                  {copiedId === group.id ? <Check className="w-3.5 h-3.5 text-primary" /> : <UserPlus className="w-3.5 h-3.5" />}
-                  <span>{copiedId === group.id ? "Copiado!" : "Convidar"}</span>
-                </Button>
-                {group.owner_id === userId && (
-                  <>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="shrink-0 rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-foreground"
-                      onClick={(e) => { e.stopPropagation(); setGroupToEdit({ id: group.id, name: group.name }); setEditName(group.name); }}
-                      aria-label="Editar nome do grupo"
-                    >
-                      <Pencil className="w-4 h-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="shrink-0 rounded-full h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                      onClick={(e) => { e.stopPropagation(); setGroupToDelete(group.id); }}
-                      aria-label="Excluir grupo"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </>
-                )}
+                <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border/40">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="flex-1 rounded-full gap-1.5 h-9 text-xs font-medium"
+                    onClick={(e) => { e.stopPropagation(); copyInviteLink(group.invite_code, group.id); }}
+                  >
+                    {copiedId === group.id ? <Check className="w-3.5 h-3.5 text-primary" /> : <UserPlus className="w-3.5 h-3.5" />}
+                    <span>{copiedId === group.id ? "Copiado!" : "Convidar"}</span>
+                  </Button>
+                  {group.owner_id === userId && (
+                    <div className="flex sm:hidden items-center gap-1">
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full h-9 w-9 p-0 text-muted-foreground hover:text-foreground"
+                        onClick={(e) => { e.stopPropagation(); setGroupToEdit({ id: group.id, name: group.name }); setEditName(group.name); }}
+                        aria-label="Editar nome do grupo"
+                      >
+                        <Pencil className="w-4 h-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-full h-9 w-9 p-0 text-muted-foreground hover:text-destructive"
+                        onClick={(e) => { e.stopPropagation(); setGroupToDelete(group.id); }}
+                        aria-label="Excluir grupo"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  )}
+                </div>
               </div>
             );
           })}
