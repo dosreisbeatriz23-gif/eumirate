@@ -95,32 +95,19 @@ const AppLayout = () => {
         <div className="flex items-center justify-around h-[72px] px-2 pb-1">
           {mobileTabs.map((tab) => {
             const active = isActive(location.pathname, tab.path);
-            const isAdd = tab.path === "/adicionar";
             return (
               <button
                 key={tab.path}
                 onClick={() => navigate(tab.path)}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 w-full h-full transition-all duration-300",
-                  isAdd
-                    ? "relative -mt-6"
-                    : active
-                      ? "text-foreground"
-                      : "text-muted-foreground/60"
+                  active ? "text-foreground" : "text-muted-foreground/60"
                 )}
               >
-                {isAdd ? (
-                  <span className="flex items-center justify-center w-[52px] h-[52px] rounded-2xl bg-primary text-primary-foreground shadow-elevated">
-                    <tab.icon className="w-5 h-5" strokeWidth={2} />
-                  </span>
-                ) : (
-                  <>
-                    <tab.icon className="w-[22px] h-[22px]" strokeWidth={active ? 2.2 : 1.8} />
-                    <span className={cn("text-[10px] tracking-wide", active ? "font-medium" : "font-normal")}>
-                      {tab.label}
-                    </span>
-                  </>
-                )}
+                <tab.icon className="w-[22px] h-[22px]" strokeWidth={active ? 2.2 : 1.8} />
+                <span className={cn("text-[10px] tracking-wide", active ? "font-medium" : "font-normal")}>
+                  {tab.label}
+                </span>
               </button>
             );
           })}
