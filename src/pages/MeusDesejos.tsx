@@ -170,7 +170,7 @@ const MeusDesejos = () => {
       <div className="container mx-auto px-4 md:px-8 py-8 md:py-12 max-w-6xl space-y-12">
         <div className="flex items-end justify-between gap-4 flex-wrap">
           <div>
-            <h2 className="text-3xl sm:text-4xl title-gliker tracking-tight">Minhas Listas</h2>
+            <h2 className="sm:text-4xl title-gliker tracking-tight text-3xl">Minhas Listas</h2>
             <p className="text-sm text-muted-foreground mt-1.5">Organize seus desejos em listas privadas e públicas</p>
           </div>
           <Button
