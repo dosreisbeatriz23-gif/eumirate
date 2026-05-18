@@ -47,7 +47,7 @@ const Home = () => {
         </div>
         <Button
           onClick={() => navigate("/adicionar")}
-          className="rounded-full gap-2.5 h-11 px-6 shadow-card hover:shadow-medium transition-shadow duration-300 text-[13px] font-medium"
+          className="hidden md:inline-flex rounded-full gap-2.5 h-11 px-6 shadow-card hover:shadow-medium transition-shadow duration-300 text-[13px] font-medium"
         >
           <PlusCircle className="w-4 h-4" />
           Adicionar Item
