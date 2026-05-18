@@ -211,7 +211,7 @@ const Presentes = () => {
   return (
     <div className="container mx-auto px-5 md:px-8 py-8 md:py-12 max-w-6xl">
       <header className="mb-8 md:mb-10">
-        <h1 className="font-gliker uppercase tracking-tight text-[#54280D] text-3xl md:text-5xl">
+        <h1 className="title-gliker tracking-tight text-3xl sm:text-4xl md:text-5xl">
           Presentes Reservados
         </h1>
         <p className="text-muted-foreground text-sm md:text-base mt-3 max-w-2xl leading-relaxed">
