@@ -1,5 +1,5 @@
 import { Outlet, useLocation, useNavigate, Navigate } from "react-router-dom";
-import { Home, List, Users, User, Gift } from "lucide-react";
+import { Home, List, PlusCircle, Users, User, Gift } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
@@ -14,6 +14,7 @@ const desktopLinks = [
 const mobileTabs = [
   { label: "Home", icon: Home, path: "/home" },
   { label: "Listas", icon: List, path: "/meus-desejos" },
+  { label: "Adicionar", icon: PlusCircle, path: "/adicionar" },
   { label: "Presentes", icon: Gift, path: "/presentes" },
   { label: "Grupos", icon: Users, path: "/grupos" },
   { label: "Perfil", icon: User, path: "/perfil" },
@@ -95,19 +96,32 @@ const AppLayout = () => {
         <div className="flex items-center justify-around h-[72px] px-2 pb-1">
           {mobileTabs.map((tab) => {
             const active = isActive(location.pathname, tab.path);
+            const isAdd = tab.path === "/adicionar";
             return (
               <button
                 key={tab.path}
                 onClick={() => navigate(tab.path)}
                 className={cn(
                   "flex flex-col items-center justify-center gap-1 w-full h-full transition-all duration-300",
-                  active ? "text-foreground" : "text-muted-foreground/60"
+                  isAdd
+                    ? "relative -mt-6"
+                    : active
+                      ? "text-foreground"
+                      : "text-muted-foreground/60"
                 )}
               >
-                <tab.icon className="w-[22px] h-[22px]" strokeWidth={active ? 2.2 : 1.8} />
-                <span className={cn("text-[10px] tracking-wide", active ? "font-medium" : "font-normal")}>
-                  {tab.label}
-                </span>
+                {isAdd ? (
+                  <span className="flex items-center justify-center w-[52px] h-[52px] rounded-2xl bg-primary text-primary-foreground shadow-elevated">
+                    <tab.icon className="w-5 h-5" strokeWidth={2} />
+                  </span>
+                ) : (
+                  <>
+                    <tab.icon className="w-[22px] h-[22px]" strokeWidth={active ? 2.2 : 1.8} />
+                    <span className={cn("text-[10px] tracking-wide", active ? "font-medium" : "font-normal")}>
+                      {tab.label}
+                    </span>
+                  </>
+                )}
               </button>
             );
           })}
