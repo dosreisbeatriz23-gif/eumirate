@@ -36,7 +36,7 @@ const Home = () => {
       {/* Header */}
       <div className="flex items-center justify-between gap-3 mb-8 sm:mb-10">
         <div className="min-w-0 flex-1">
-          <h1 className="text-2xl sm:text-4xl title-gliker tracking-tight truncate">
+          <h1 className="sm:text-4xl title-gliker tracking-tight truncate text-xl mx-0 my-0 px-0 py-0">
             Mural de Inspiração
           </h1>
           <p className="text-[11px] sm:text-sm font-medium tracking-widest uppercase mt-2 flex items-center gap-2">
