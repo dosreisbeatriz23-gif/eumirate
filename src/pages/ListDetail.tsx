@@ -76,7 +76,7 @@ const ListDetail = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wishlists")
-        .select("*")
+        .select("id, user_id, title, description, visibility, created_at, updated_at")
         .eq("id", id!)
         .single();
       if (error) throw error;
@@ -146,9 +146,14 @@ const ListDetail = () => {
     onError: () => toast.error("Erro ao mover item"),
   });
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!wishlist) return;
-    const url = `${window.location.origin}/compartilhado/${wishlist.share_token}`;
+    const { data: token, error } = await supabase.rpc("get_my_share_token", { p_wishlist_id: wishlist.id });
+    if (error || !token) {
+      toast.error("Não foi possível gerar o link");
+      return;
+    }
+    const url = `${window.location.origin}/compartilhado/${token}`;
     navigator.clipboard.writeText(url);
     setCopied(true);
     toast.success("Link copiado!");

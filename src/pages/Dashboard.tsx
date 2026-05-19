@@ -16,7 +16,7 @@ const Dashboard = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wishlists")
-        .select("*")
+        .select("id, user_id, title, description, visibility, created_at, updated_at")
         .eq("user_id", userId)
         .order("created_at", { ascending: false });
       if (error) throw error;

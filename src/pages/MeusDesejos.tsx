@@ -29,7 +29,10 @@ const MeusDesejos = () => {
     queryKey: ["wishlists", userId],
     queryFn: async () => {
       const { data, error } = await supabase
-        .from("wishlists").select("*").eq("user_id", userId).order("created_at", { ascending: true });
+        .from("wishlists")
+        .select("id, user_id, title, description, visibility, created_at, updated_at")
+        .eq("user_id", userId)
+        .order("created_at", { ascending: true });
       if (error) throw error;
       return data;
     },
