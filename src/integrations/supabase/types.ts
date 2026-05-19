@@ -269,6 +269,7 @@ export type Database = {
           name: string
         }[]
       }
+      get_my_share_token: { Args: { p_wishlist_id: string }; Returns: string }
       get_wishlist_by_share_token: { Args: { token: string }; Returns: string }
       is_group_member: {
         Args: { _group_id: string; _user_id: string }

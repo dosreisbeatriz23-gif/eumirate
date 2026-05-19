@@ -75,7 +75,7 @@ const MinhaLista = () => {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("wishlists")
-        .select("*")
+        .select("id, user_id, title, description, visibility, created_at, updated_at")
         .eq("user_id", user!.id)
         .single();
       if (error) throw error;
@@ -187,9 +187,14 @@ const MinhaLista = () => {
     }
   };
 
-  const handleShare = () => {
+  const handleShare = async () => {
     if (!wishlist) return;
-    const url = `${window.location.origin}/lista/${wishlist.share_token}`;
+    const { data: token, error } = await supabase.rpc("get_my_share_token", { p_wishlist_id: wishlist.id });
+    if (error || !token) {
+      toast.error("Não foi possível gerar o link");
+      return;
+    }
+    const url = `${window.location.origin}/lista/${token}`;
     setShareUrl(url);
     navigator.clipboard.writeText(url);
     setCopied(true);
