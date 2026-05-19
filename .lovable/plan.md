@@ -1,72 +1,38 @@
-## Diagnóstico
+## Objetivo
+No mobile, colocar título e botão na MESMA LINHA (lado a lado) em Home, Grupos e Meus Desejos, e padronizar os textos em Title Case (sem caixa alta), mantendo tudo dentro da tela.
 
-Verifiquei o banco e o código. A query em `GroupDetail.tsx` e as policies de RLS já estão corretas: itens com `visibility IN ('public','group')` em listas com `visibility IN ('public','group')` ficam visíveis para qualquer membro do mesmo grupo do dono.
+## Causa do texto em CAIXA ALTA
+A classe `.title-gliker` em `src/index.css` aplica `text-transform: uppercase`. Por isso "Mural de Inspiração" aparece como "MURAL DE INSPIRAÇÃO" e "Meus Grupos" como "MEUS GRUPOS", mesmo com o JSX em Title Case.
 
-O problema está em uma inconsistência de dados: **um item pode estar marcado como `private` mesmo estando dentro de uma lista pública**. Quando isso acontece, ele aparece para o dono em "Minhas Listas" mas não aparece para os outros membros do grupo — e é exatamente esse o sintoma relatado.
+## Alterações
 
-Causas em que isso acontece hoje:
+### 1. `src/index.css` (classe `.title-gliker`)
+Remover `text-transform: uppercase;` para que os títulos respeitem o casing do JSX (Title Case).
+Impacto: Home, Grupos, Meus Desejos, Presentes, Dashboard, AddItem, CreateList passarão a exibir os títulos em Title Case (que é exatamente o pedido recorrente do usuário). Não muda fonte, peso, cor ou tamanho.
 
-1. O usuário adiciona um item escolhendo "privado" e o sistema o coloca em uma lista pessoal (privada), mas se a lista de destino existente for pública, o item entra como `private` dentro de uma lista pública.
-2. Itens antigos criados antes da migração de visibilidade ficaram com `visibility='private'` mesmo após a lista virar pública.
-3. Em `AddItem.tsx`, a visibilidade do item é decidida pelo toggle do formulário e não pela visibilidade da lista de destino — então é possível salvar item privado dentro de lista pública.
+### 2. `src/pages/Home.tsx` (header)
+- Voltar para layout em linha única no mobile: `flex items-center justify-between gap-3` (sem `flex-col`).
+- Título: reduzir um pouco para caber confortavelmente em 390px → `text-2xl sm:text-4xl title-gliker tracking-tight` e `truncate` para evitar overflow.
+- Manter subtítulo "Meus Desejos" abaixo do título (dentro do div esquerdo).
+- Botão "Adicionar Item": compacto no mobile, expandido no desktop → `shrink-0 rounded-full gap-2 h-10 px-4 sm:h-11 sm:px-6 text-[13px]`. Largura automática (sem `w-full`).
 
-## Plano de correção
+### 3. `src/pages/Grupos.tsx` (header)
+- Já está `flex items-center justify-between`. Apenas:
+  - Título: `text-2xl sm:text-4xl title-gliker tracking-tight truncate` para caber.
+  - Botão: trocar label "Criar Grupo" → "Adicionar" (conforme imagem do usuário). Manter `rounded-full gap-2 h-10 px-4 text-[13px] shrink-0`.
 
-### 1. Regra de ouro no backend (migration)
+### 4. `src/pages/MeusDesejos.tsx` (header)
+- Trocar `flex-col gap-4 sm:flex-row` por `flex items-center justify-between gap-3` (linha única no mobile).
+- Título: `text-2xl sm:text-4xl title-gliker tracking-tight truncate`.
+- Mover o subtítulo "Organize seus desejos…" para baixo do título (continua dentro do div esquerdo); ele pode quebrar/ocultar via `hidden sm:block` se ficar apertado.
+- Botão "Nova lista": `shrink-0 rounded-full gap-2 h-10 px-4 sm:h-11 sm:px-5 shadow-elevated` (sem `w-full`).
 
-Adicionar trigger em `wishlist_items` que sincroniza a `visibility` do item com a visibilidade da lista de destino sempre que o item é inserido ou atualizado:
+## Textos padronizados (Title Case)
+- "Mural de Inspiração"
+- "Meus Desejos"
+- "Adicionar Item"
+- "Meus Grupos"
+- Botão Grupos: "Adicionar"
 
-- Se a lista é `public` → o item vira `public`.
-- Se a lista é `private` → o item vira `private`.
-- Se a lista é `group` → o item vira `group`.
-
-Isso elimina a possibilidade de inconsistência futura, independente do que o cliente envie.
-
-### 2. Corrigir os itens já existentes (data fix)
-
-Rodar uma atualização única: para cada item, fazer `wishlist_items.visibility = wishlists.visibility` da lista pai. Isso resolve imediatamente os itens "perdidos" que existem hoje em listas públicas.
-
-### 3. Simplificar `AddItem.tsx` (frontend)
-
-- Remover o toggle "privado/público" do item: a visibilidade passa a ser definida pela lista escolhida.
-- Mostrar com clareza qual lista está selecionada e se ela é pública ou privada (badge ao lado do nome).
-- Quando o usuário entra em "Adicionar item" a partir de um grupo (`/adicionar?group=...`), pré-selecionar a lista pública padrão "Presentes Que Quero Ganhar" (criando-a se não existir, como já é feito hoje).
-
-### 4. Reforço visual em `GroupDetail.tsx`
-
-- Mostrar contador "X presentes compartilhados por Y membros" no topo (já existe — manter).
-- Caso a query retorne zero itens mas existam membros, exibir uma mensagem explicativa: "Os membros ainda não compartilharam presentes públicos neste grupo. Para compartilhar, adicione itens à sua lista 'Presentes Que Quero Ganhar'."
-- Manter o realtime já configurado para `wishlist_items` para refletir mudanças imediatamente.
-
-## Detalhes técnicos
-
-```sql
--- Migration
-CREATE OR REPLACE FUNCTION public.sync_item_visibility_to_list()
-RETURNS trigger LANGUAGE plpgsql SECURITY DEFINER SET search_path = public AS $$
-DECLARE v_list_vis text;
-BEGIN
-  SELECT visibility INTO v_list_vis FROM public.wishlists WHERE id = NEW.wishlist_id;
-  NEW.visibility := v_list_vis;
-  RETURN NEW;
-END;
-$$;
-
-CREATE TRIGGER trg_sync_item_visibility
-BEFORE INSERT OR UPDATE OF wishlist_id ON public.wishlist_items
-FOR EACH ROW EXECUTE FUNCTION public.sync_item_visibility_to_list();
-
--- Data fix (insert tool)
-UPDATE public.wishlist_items wi
-SET visibility = w.visibility, updated_at = now()
-FROM public.wishlists w
-WHERE w.id = wi.wishlist_id AND wi.visibility <> w.visibility;
-```
-
-Frontend: ajustes em `src/pages/AddItem.tsx` (remover toggle e usar visibilidade da lista) e em `src/pages/GroupDetail.tsx` (mensagem vazia mais útil).
-
-## Resultado esperado
-
-- Qualquer item criado dentro de uma lista pública passa a aparecer automaticamente para todos os membros do mesmo grupo, com o botão "Reservar Presente" funcionando.
-- Itens em listas privadas continuam invisíveis para terceiros.
-- Não há mais possibilidade de o usuário "esquecer" de marcar como público.
+## Fora do escopo
+Sem mudanças em lógica, queries, rotas ou backend. Apenas classes Tailwind e o CSS do `.title-gliker`.
