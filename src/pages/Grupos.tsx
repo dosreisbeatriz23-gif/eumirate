@@ -109,10 +109,10 @@ const Grupos = () => {
 
   return (
     <div className="container mx-auto px-5 md:px-8 py-8 md:py-12 max-w-2xl space-y-8 md:space-y-10 page-enter">
-      <div className="flex items-center justify-between">
-        <h2 className="sm:text-4xl title-gliker tracking-tight text-3xl">Meus Grupos</h2>
-        <Button onClick={() => setShowCreate(true)} className="rounded-full gap-2 h-10 px-5 text-[13px] font-medium" size="sm">
-          <Plus className="w-4 h-4" /> Criar Grupo
+      <div className="flex items-center justify-between gap-3">
+        <h2 className="text-2xl sm:text-4xl title-gliker tracking-tight truncate flex-1 min-w-0">Meus Grupos</h2>
+        <Button onClick={() => setShowCreate(true)} className="shrink-0 rounded-full gap-2 h-10 px-4 sm:px-5 text-[13px] font-medium" size="sm">
+          <Plus className="w-4 h-4" /> Adicionar
         </Button>
       </div>
 
