@@ -32,22 +32,22 @@ const Home = () => {
   });
 
   return (
-    <div className="container mx-auto px-4 md:px-8 py-8 md:py-12 max-w-6xl">
+    <div className="container mx-auto px-5 md:px-8 py-8 md:py-12 max-w-6xl">
       {/* Header */}
-      <div className="flex items-end justify-between mb-10">
-        <div>
-          <h1 className="whitespace-nowrap text-2xl sm:text-4xl title-gliker tracking-tight">
+      <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between mb-8 sm:mb-10">
+        <div className="min-w-0">
+          <h1 className="text-3xl sm:text-4xl title-gliker tracking-tight">
             Mural de Inspiração
           </h1>
-          <p className="text-sm font-medium tracking-widest uppercase mt-2 flex items-center gap-2">
+          <p className="text-xs sm:text-sm font-medium tracking-widest uppercase mt-2 flex items-center gap-2">
             <span className="inline-block w-5 h-0.5 bg-primary rounded-full" />
-            <span className="text-primary">MEUS DESEJOS</span>
+            <span className="text-primary">Meus Desejos</span>
             <span className="inline-block w-5 h-0.5 bg-primary rounded-full" />
           </p>
         </div>
         <Button
           onClick={() => navigate("/adicionar")}
-          className="inline-flex rounded-full gap-2.5 h-11 px-6 shadow-card hover:shadow-medium transition-shadow duration-300 text-[13px] font-medium"
+          className="w-full sm:w-auto inline-flex justify-center rounded-full gap-2.5 h-11 px-6 shadow-card hover:shadow-medium transition-shadow duration-300 text-[13px] font-medium"
         >
           <PlusCircle className="w-4 h-4" />
           Adicionar Item

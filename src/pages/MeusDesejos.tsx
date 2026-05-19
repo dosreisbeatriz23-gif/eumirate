@@ -58,7 +58,7 @@ const MeusDesejos = () => {
     mutationFn: async () => {
       const { error } = await supabase.from("wishlists").insert({
         user_id: userId,
-        title: newTitle.trim() || (createVisibility === "private" ? "Minha Lista Pessoal" : "Presentes Que Quero Ganhar"),
+        title: newTitle.trim() || (createVisibility === "private" ? "Minha Lista Pessoal" : "Ideias de Presentes"),
         visibility: createVisibility,
       });
       if (error) throw error;
@@ -170,15 +170,15 @@ const MeusDesejos = () => {
 
   return (
     <div className="page-enter">
-      <div className="container mx-auto px-4 md:px-8 py-8 md:py-12 max-w-6xl space-y-12">
-        <div className="flex items-end justify-between gap-4 flex-wrap">
-          <div>
+      <div className="container mx-auto px-5 md:px-8 py-8 md:py-12 max-w-6xl space-y-10 sm:space-y-12">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+          <div className="min-w-0">
             <h2 className="sm:text-4xl title-gliker tracking-tight text-3xl">Minhas Listas</h2>
             <p className="text-sm text-muted-foreground mt-1.5">Organize seus desejos em listas privadas e públicas</p>
           </div>
           <Button
             onClick={openCreate}
-            className="rounded-full gap-2 h-11 px-5 shadow-elevated"
+            className="w-full sm:w-auto justify-center rounded-full gap-2 h-11 px-5 shadow-elevated"
           >
             <Plus className="w-4 h-4" />
             Nova lista
@@ -204,7 +204,7 @@ const MeusDesejos = () => {
         <section>
           <SectionHeader
             icon={Globe}
-            title="Presentes Que Quero Ganhar"
+            title="Ideias de Presentes"
             subtitle="Membros dos seus grupos podem visualizar"
             accent="bg-primary/10 text-primary"
           />
@@ -255,7 +255,7 @@ const MeusDesejos = () => {
             </div>
 
             <Input
-                placeholder={createVisibility === "private" ? "Ex: Minha Lista Pessoal" : "Ex: Presentes Que Quero Ganhar"}
+                placeholder={createVisibility === "private" ? "Ex: Minha Lista Pessoal" : "Ex: Ideias de Presentes"}
               value={newTitle}
               onChange={(e) => setNewTitle(e.target.value)}
               maxLength={100}
