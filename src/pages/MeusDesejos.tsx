@@ -171,14 +171,14 @@ const MeusDesejos = () => {
   return (
     <div className="page-enter">
       <div className="container mx-auto px-5 md:px-8 py-8 md:py-12 max-w-6xl space-y-10 sm:space-y-12">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
-          <div className="min-w-0">
-            <h2 className="sm:text-4xl title-gliker tracking-tight text-3xl">Minhas Listas</h2>
-            <p className="text-sm text-muted-foreground mt-1.5">Organize seus desejos em listas privadas e públicas</p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <h2 className="text-2xl sm:text-4xl title-gliker tracking-tight truncate">Minhas Listas</h2>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 truncate">Organize seus desejos em listas privadas e públicas</p>
           </div>
           <Button
             onClick={openCreate}
-            className="w-full sm:w-auto justify-center rounded-full gap-2 h-11 px-5 shadow-elevated"
+            className="shrink-0 justify-center rounded-full gap-2 h-10 px-4 sm:h-11 sm:px-5 shadow-elevated"
           >
             <Plus className="w-4 h-4" />
             Nova lista
