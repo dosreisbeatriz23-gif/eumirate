@@ -1,7 +1,42 @@
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.0";
+
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version',
 };
+
+/** Reject private IP ranges, loopback, link-local and cloud metadata endpoints. */
+function isBlockedHost(hostname: string): boolean {
+  const h = hostname.toLowerCase();
+  if (h === 'localhost' || h.endsWith('.localhost') || h.endsWith('.local') || h.endsWith('.internal')) return true;
+  // IPv6 loopback / unspecified / link-local / unique-local
+  if (h === '::1' || h === '::' || h.startsWith('fe80:') || h.startsWith('fc') || h.startsWith('fd')) return true;
+  // IPv4 literal?
+  const m = h.match(/^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/);
+  if (m) {
+    const [a, b] = [parseInt(m[1]), parseInt(m[2])];
+    if (a === 10) return true;
+    if (a === 127) return true;
+    if (a === 0) return true;
+    if (a === 169 && b === 254) return true; // link-local incl. 169.254.169.254 metadata
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a >= 224) return true; // multicast / reserved
+  }
+  return false;
+}
+
+function assertSafeUrl(raw: string): URL {
+  let u: URL;
+  try { u = new URL(raw); } catch { throw new Error('URL inválida'); }
+  if (u.protocol !== 'http:' && u.protocol !== 'https:') {
+    throw new Error('Protocolo não permitido');
+  }
+  if (isBlockedHost(u.hostname)) {
+    throw new Error('Host não permitido');
+  }
+  return u;
+}
 
 function truncateTitle(title: string | null, maxWords = 4): string | null {
   if (!title) return null;
