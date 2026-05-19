@@ -50,8 +50,7 @@ const Home = () => {
           className="shrink-0 inline-flex justify-center rounded-full gap-2 h-10 px-4 sm:h-11 sm:px-6 shadow-card hover:shadow-medium transition-shadow duration-300 text-[13px] font-medium"
         >
           <PlusCircle className="w-4 h-4" />
-          <span className="hidden xs:inline sm:inline">Adicionar Item</span>
-          <span className="xs:hidden sm:hidden">Adicionar</span>
+          Adicionar Item
         </Button>
       </div>
 
