@@ -174,7 +174,7 @@ const MeusDesejos = () => {
         <div className="flex items-center justify-between gap-3">
           <div className="min-w-0 flex-1">
             <h2 className="sm:text-4xl title-gliker tracking-tight truncate text-xl mx-0 my-0 px-0 py-0">Minhas Listas</h2>
-            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 truncate">Organize seus desejos em listas privadas e públicas</p>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-1.5 truncate">Seus desejos organizados do seu jeito</p>
           </div>
           <Button
             onClick={openCreate}
