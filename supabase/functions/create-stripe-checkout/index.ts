@@ -9,9 +9,16 @@ import Stripe from "https://esm.sh/stripe@14.21.0?target=deno";
 
 const STRIPE_PRICE_ID = Deno.env.get("STRIPE_PREMIUM_PRICE_ID") ?? "";
 
+// CORS com os cabeçalhos extra enviados pelo cliente do Supabase no navegador.
+const CORS_HEADERS = {
+  ...corsHeaders,
+  "Access-Control-Allow-Headers":
+    "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-api-version",
+};
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
+    return new Response("ok", { headers: CORS_HEADERS });
   }
 
   try {
@@ -19,7 +26,7 @@ Deno.serve(async (req) => {
     if (!stripeSecretKey || !STRIPE_PRICE_ID) {
       return new Response(JSON.stringify({ error: "Stripe não configurado (secret key ou price id ausente)" }), {
         status: 500,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       });
     }
 
@@ -38,7 +45,7 @@ Deno.serve(async (req) => {
     if (userError || !user) {
       return new Response(JSON.stringify({ error: "Não autenticado" }), {
         status: 401,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
+        headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
       });
     }
 
@@ -83,13 +90,13 @@ Deno.serve(async (req) => {
     });
 
     return new Response(JSON.stringify({ checkoutUrl: session.url }), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   } catch (error) {
     console.error("Erro inesperado:", error);
     return new Response(JSON.stringify({ error: String(error) }), {
       status: 500,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
+      headers: { ...CORS_HEADERS, "Content-Type": "application/json" },
     });
   }
 });
