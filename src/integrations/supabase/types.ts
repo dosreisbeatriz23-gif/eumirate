@@ -118,6 +118,168 @@ export type Database = {
         }
         Relationships: []
       }
+      referral_accounts: {
+        Row: {
+          code: string
+          created_at: string
+          first_list_at: string | null
+          user_id: string
+        }
+        Insert: {
+          code?: string
+          created_at?: string
+          first_list_at?: string | null
+          user_id: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          first_list_at?: string | null
+          user_id?: string
+        }
+        Relationships: []
+      }
+      referral_events: {
+        Row: {
+          created_at: string
+          event_name: string
+          id: string
+          user_id: string | null
+          visit_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_name: string
+          id?: string
+          user_id?: string | null
+          visit_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_name?: string
+          id?: string
+          user_id?: string | null
+          visit_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_events_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: false
+            referencedRelation: "referral_visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      referral_rewards: {
+        Row: {
+          earned_at: string
+          ends_at: string | null
+          starts_at: string | null
+          user_id: string
+        }
+        Insert: {
+          earned_at?: string
+          ends_at?: string | null
+          starts_at?: string | null
+          user_id: string
+        }
+        Update: {
+          earned_at?: string
+          ends_at?: string | null
+          starts_at?: string | null
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_rewards_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: true
+            referencedRelation: "referral_accounts"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      referral_visits: {
+        Row: {
+          claimed_by: string | null
+          expires_at: string
+          id: string
+          referrer_id: string
+          visited_at: string
+        }
+        Insert: {
+          claimed_by?: string | null
+          expires_at?: string
+          id?: string
+          referrer_id: string
+          visited_at?: string
+        }
+        Update: {
+          claimed_by?: string | null
+          expires_at?: string
+          id?: string
+          referrer_id?: string
+          visited_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referral_visits_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "referral_accounts"
+            referencedColumns: ["user_id"]
+          },
+        ]
+      }
+      referrals: {
+        Row: {
+          first_list_at: string | null
+          id: string
+          qualified_at: string | null
+          referred_id: string
+          referrer_id: string
+          signed_up_at: string
+          visit_id: string
+          visited_at: string
+        }
+        Insert: {
+          first_list_at?: string | null
+          id?: string
+          qualified_at?: string | null
+          referred_id: string
+          referrer_id: string
+          signed_up_at: string
+          visit_id: string
+          visited_at: string
+        }
+        Update: {
+          first_list_at?: string | null
+          id?: string
+          qualified_at?: string | null
+          referred_id?: string
+          referrer_id?: string
+          signed_up_at?: string
+          visit_id?: string
+          visited_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "referrals_referrer_id_fkey"
+            columns: ["referrer_id"]
+            isOneToOne: false
+            referencedRelation: "referral_accounts"
+            referencedColumns: ["user_id"]
+          },
+          {
+            foreignKeyName: "referrals_visit_id_fkey"
+            columns: ["visit_id"]
+            isOneToOne: true
+            referencedRelation: "referral_visits"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       reservations: {
         Row: {
           created_at: string
@@ -256,6 +418,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      attribute_referral: {
+        Args: { p_user_id: string; p_visit_id: string }
+        Returns: boolean
+      }
+      claim_referral: { Args: { p_visit_id: string }; Returns: boolean }
       create_reservation: {
         Args: {
           p_item_id: string
@@ -279,13 +446,17 @@ export type Database = {
         }[]
       }
       get_my_share_token: { Args: { p_wishlist_id: string }; Returns: string }
+      get_public_wishlist: { Args: { p_token: string }; Returns: Json }
+      get_referral_dashboard: { Args: never; Returns: Json }
       get_wishlist_by_share_token: { Args: { token: string }; Returns: string }
+      has_premium_access: { Args: never; Returns: boolean }
       is_group_member: {
         Args: { _group_id: string; _user_id: string }
         Returns: boolean
       }
       owns_wishlist: { Args: { wishlist_uuid: string }; Returns: boolean }
       owns_wishlist_item: { Args: { item_uuid: string }; Returns: boolean }
+      qualify_referral: { Args: { p_user_id: string }; Returns: undefined }
       reserve_gift: {
         Args: {
           p_expected_delivery_date?: string
@@ -296,6 +467,8 @@ export type Database = {
         }
         Returns: string
       }
+      start_referral_visit: { Args: { p_code: string }; Returns: string }
+      track_referral_event: { Args: { p_event: string }; Returns: undefined }
     }
     Enums: {
       [_ in never]: never
