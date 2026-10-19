@@ -148,13 +148,19 @@ const ListDetail = () => {
 
   const handleShare = async () => {
     if (!wishlist) return;
+    if (wishlist.visibility !== "public") {
+      toast.error("Somente listas públicas podem ser compartilhadas por link.");
+      return;
+    }
+    await supabase.rpc("get_referral_dashboard");
     const { data: token, error } = await supabase.rpc("get_my_share_token", { p_wishlist_id: wishlist.id });
     if (error || !token) {
       toast.error("Não foi possível gerar o link");
       return;
     }
     const url = `${window.location.origin}/compartilhado/${token}`;
-    navigator.clipboard.writeText(url);
+    try { await navigator.clipboard.writeText(url); }
+    catch { toast.error("Não foi possível copiar o link."); return; }
     setCopied(true);
     toast.success("Link copiado!");
     setTimeout(() => setCopied(false), 2000);

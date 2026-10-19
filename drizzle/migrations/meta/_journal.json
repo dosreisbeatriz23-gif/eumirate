@@ -8,6 +8,27 @@
       "when": 1792379482269,
       "tag": "0000_add_premium_fields_to_profiles",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792383853521,
+      "tag": "0001_referral_growth_loop",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1792384105757,
+      "tag": "0002_referral_billing_guards_and_conversion",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1792384144987,
+      "tag": "0003_referral_explicit_api_privileges",
+      "breakpoints": true
     }
   ]
 }
