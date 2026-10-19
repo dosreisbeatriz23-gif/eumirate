@@ -3,6 +3,7 @@ import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
 import { getReferralVisit, REFERRAL_STORAGE_KEY } from "@/lib/referrals";
+import { awaitReferralCapture } from "@/components/referrals/ReferralCapture";
 
 interface AuthContextType {
   session: Session | null;
@@ -51,6 +52,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, [user?.id]);
 
   const signInWithGoogle = async () => {
+    await awaitReferralCapture();
     await lovable.auth.signInWithOAuth("google", {
       redirect_uri: window.location.origin + "/login",
     });
@@ -71,6 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const signUpWithEmail = async (email: string, password: string) => {
+    await awaitReferralCapture();
     const { error } = await supabase.auth.signUp({
       email,
       password,
