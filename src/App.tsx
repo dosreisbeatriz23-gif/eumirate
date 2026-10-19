@@ -21,6 +21,8 @@ import Perfil from "./pages/Perfil";
 import ItemDetail from "./pages/ItemDetail";
 import GroupInvite from "./pages/GroupInvite";
 import NotFound from "./pages/NotFound";
+import PublicWishlist from "./pages/PublicWishlist";
+import { ReferralCapture } from "./components/referrals/ReferralCapture";
 
 const queryClient = new QueryClient();
 
@@ -31,10 +33,12 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
+          <ReferralCapture />
           <Routes>
             <Route path="/" element={<Onboarding />} />
             <Route path="/landing" element={<Index />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/compartilhado/:token" element={<PublicWishlist />} />
 
             {/* App pages with shared layout */}
             <Route element={<AppLayout />}>

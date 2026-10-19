@@ -14,6 +14,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { Plus, Gift, Lock, Globe, List, Loader2, Trash2, Check } from "lucide-react";
 import { useState } from "react";
+import { ReferralCard } from "@/components/referrals/ReferralCard";
+import { useReferrals } from "@/hooks/useReferrals";
 
 const MeusDesejos = () => {
   const { user } = useAuth();
@@ -24,6 +26,8 @@ const MeusDesejos = () => {
   const [deletingListId, setDeletingListId] = useState<string | null>(null);
   const [createVisibility, setCreateVisibility] = useState<"private" | "public">("private");
   const [newTitle, setNewTitle] = useState("");
+  const { data: referrals } = useReferrals();
+  const [firstListCreated, setFirstListCreated] = useState(false);
 
   const { data: wishlists = [], isLoading } = useQuery({
     queryKey: ["wishlists", userId],
@@ -65,6 +69,8 @@ const MeusDesejos = () => {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["wishlists"] });
+      queryClient.invalidateQueries({ queryKey: ["referrals"] });
+      if (!referrals?.first_list_at) setFirstListCreated(true);
       setCreateOpen(false);
       setNewTitle("");
       toast.success("Lista criada!");
@@ -185,6 +191,7 @@ const MeusDesejos = () => {
           </Button>
         </div>
 
+        {firstListCreated && <ReferralCard />}
         <section>
           <SectionHeader
             icon={Lock}

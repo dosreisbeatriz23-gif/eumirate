@@ -16,7 +16,7 @@ const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
-  const [mode, setMode] = useState<"login" | "signup">("login");
+  const [mode, setMode] = useState<"login" | "signup">(new URLSearchParams(window.location.search).get("mode") === "signup" ? "signup" : "login");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -88,6 +88,7 @@ const Login = () => {
               ? "Entre para acessar seus desejos"
               : "Cadastre-se e comece a criar suas listas"}
           </p>
+          {mode === "signup" && <p className="text-xs text-primary mt-3">Depois de criar sua lista, convide amigos e ganhe Premium grátis.</p>}
         </div>
 
         <div className="glass-card rounded-2xl p-7 space-y-5">

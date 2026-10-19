@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { Session, User } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable";
+import { getReferralVisit, REFERRAL_STORAGE_KEY } from "@/lib/referrals";
 
 interface AuthContextType {
   session: Session | null;
@@ -38,9 +39,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     return () => subscription.unsubscribe();
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+    const visit = getReferralVisit();
+    if (!visit) return;
+    supabase.rpc("claim_referral", { p_visit_id: visit }).then(({ error }) => {
+      if (!error) {
+        try { localStorage.removeItem(REFERRAL_STORAGE_KEY); } catch { /* Storage may be disabled. */ }
+      }
+    });
+  }, [user?.id]);
+
   const signInWithGoogle = async () => {
     await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin + "/meus-desejos",
+      redirect_uri: window.location.origin + "/login",
     });
   };
 
@@ -62,7 +74,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const { error } = await supabase.auth.signUp({
       email,
       password,
-      options: { emailRedirectTo: window.location.origin + "/dashboard" },
+      options: {
+        emailRedirectTo: window.location.origin + "/login",
+        data: { referral_visit: getReferralVisit() },
+      },
     });
     if (error) {
       if (error.message.includes("already registered")) {

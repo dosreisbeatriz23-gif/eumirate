@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { PlusCircle, ImageOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { ReferralCard } from "@/components/referrals/ReferralCard";
 
 const Home = () => {
   const navigate = useNavigate();
@@ -55,6 +56,7 @@ const Home = () => {
       </div>
 
       {/* Pinterest Grid */}
+      <ReferralCard />
       {isLoading ? (
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 sm:gap-5">
           {Array.from({ length: 8 }).map((_, i) => (

@@ -16,6 +16,7 @@ import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger
 } from "@/components/ui/accordion";
 import { toast } from "sonner";
+import { useReferrals } from "@/hooks/useReferrals";
 
 const helpItems = [
   {
@@ -49,6 +50,7 @@ const Perfil = () => {
   const queryClient = useQueryClient();
   const [editingName, setEditingName] = useState(false);
   const [newName, setNewName] = useState("");
+  const { data: referrals } = useReferrals();
 
   const { data: profile } = useQuery({
     queryKey: ["profile", user?.id],
@@ -114,6 +116,7 @@ const Perfil = () => {
         </div>
         <h2 className="text-xl font-serif text-foreground">{displayName}</h2>
         <p className="text-xs text-muted-foreground">{email}</p>
+        {referrals?.premium_active && <p className="text-xs text-primary mt-2">{referrals.paid_premium ? "Premium" : "Premium por indicação"}</p>}
       </div>
 
       {/* Tabs */}
